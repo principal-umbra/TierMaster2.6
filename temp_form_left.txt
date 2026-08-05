@@ -1,0 +1,176 @@
+            {/* Modal Form */}
+            <form onSubmit={handleSaveTask} className="flex-1 overflow-hidden flex flex-col">
+              
+              {/* Inner content grid (Left: Basic Info, Right: Advanced Scheduling) */}
+              <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-h-[85vh]">
+                
+                {/* Left Column (Span 7): Basic Fields */}
+                <div className="lg:col-span-7 space-y-3">
+                  
+                  {selectedBacklogRow && (
+                    <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-xl flex gap-2 items-center">
+                      <Link className="w-4 h-4 text-indigo-600 shrink-0 animate-pulse" />
+                      <div className="text-xs text-indigo-900 leading-snug">
+                        <span className="font-semibold text-[9px] uppercase tracking-wider text-indigo-600 mr-2">Vínculo CRM</span>
+                        <strong className="font-bold">{selectedBacklogRow["ID"]}</strong> - {selectedBacklogRow["Subject"]}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Title */}
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Título de la Tarea *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formTitle}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="Ej: Backup..."
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800"
+                      />
+                    </div>
+                    {/* CRM Ticket Search */}
+                    <div className="space-y-1 relative">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Vincular a Ticket del CRM</label>
+                      <input
+                        type="text"
+                        value={formTicketId}
+                        onChange={(e) => setFormTicketId(e.target.value)}
+                        placeholder="Ej: 34922..."
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-medium font-mono"
+                      />
+                      {formTicketId && (
+                        <div className="text-[9px] text-slate-500 bg-slate-50 border border-slate-100 p-1.5 rounded-lg mt-1 max-h-12 overflow-y-auto leading-snug absolute z-10 w-full shadow-sm">
+                          {crmTicketsList.find(t => t.id.toString() === formTicketId.trim()) ? (
+                            <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                              <span>✓ Ticket:</span> 
+                              <span className="truncate max-w-[200px] inline-block align-bottom">{crmTicketsList.find(t => t.id.toString() === formTicketId.trim())?.subject}</span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">ID manual</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Technical Staff & Priority */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Responsable *</label>
+                      <select
+                        required
+                        value={formAssignedToId}
+                        onChange={(e) => setFormAssignedToId(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="">Selecciona Responsable</option>
+                        {agents.map(a => (
+                          <option key={a.id} value={a.id}>{a.name} ({a.username})</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Prioridad *</label>
+                      <select
+                        value={formPriority}
+                        onChange={(e) => setFormPriority(e.target.value as any)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Category & Effort */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Categoría *</label>
+                      <select
+                        value={formCategory}
+                        onChange={(e) => setFormCategory(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="Soporte">Soporte Técnico</option>
+                        <option value="Mantenimiento">Mantenimiento Preventivo</option>
+                        <option value="Backup">Respaldo / Backup</option>
+                        <option value="Instalación">Instalación / Configuración</option>
+                        <option value="Monitoreo">Monitoreo / Guardia</option>
+                        <option value="Auditoría">Auditoría / Control</option>
+                        <option value="Capacitación">Capacitación / Inducción</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Esfuerzo *</label>
+                      <select
+                        value={formEffortEstimate}
+                        onChange={(e) => setFormEffortEstimate(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="Muy rápido (< 15m)">Muy rápido (&lt; 15m)</option>
+                        <option value="Rápido (15m - 1h)">Rápido (15m - 1h)</option>
+                        <option value="Medio (1h - 4h)">Medio (1h - 4h)</option>
+                        <option value="Extenso (4h - 1d)">Extenso (4h - 1d)</option>
+                        <option value="Complejo (Varios días)">Complejo (Varios días)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Instrucciones</label>
+                    <textarea
+                      value={formNotes}
+                      onChange={(e) => setFormNotes(e.target.value)}
+                      placeholder="Detalles técnicos, comandos a ejecutar..."
+                      rows={2}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-700 font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    {/* SCOPE SELECTION */}
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Alcance *</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormScope('Cliente')}
+                          className={`flex-1 py-1.5 px-2 rounded-lg border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                            formScope === 'Cliente'
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm'
+                              : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <User className="w-3.5 h-3.5" />
+                          Cliente
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormScope('Interna')}
+                          className={`flex-1 py-1.5 px-2 rounded-lg border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                            formScope === 'Interna'
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm'
+                              : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <Building className="w-3.5 h-3.5" />
+                          Interna
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* BITACORA SELECTION */}
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200/60 p-2 rounded-lg hover:bg-slate-100/50 transition-colors h-[34px]">
+                      <input
+                        type="checkbox"
+                        checked={formShowInBitacora}
+                        onChange={(e) => setFormShowInBitacora(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-[11px] font-bold text-slate-800 block truncate">Mostrar en Bitácora</span>

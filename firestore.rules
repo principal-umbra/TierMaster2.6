@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Explicitly listing new collections for future hardening
+    match /roster_agentes/{agentId} {
+      allow read, write: if true;
+    }
+    match /requerimientos_en_curso/{reqId} {
+      allow read, write: if true;
+    }
+    match /backlog_semanal/{backlogId} {
+      allow read, write: if true;
+    }
+    match /historico_completados/{historyId} {
+      allow read, write: if true;
+    }
+    match /calendarEvents/{eventId} {
+      allow read, write: if true;
+    }
+    match /personalReminders/{agentId} {
+      allow read, write: if true;
+    }
+    match /collaborations/{collabId} {
+      allow read, write: if true;
+    }
+    match /contractors/{contractorId} {
+      allow read, write: if true;
+    }
+  }
+}

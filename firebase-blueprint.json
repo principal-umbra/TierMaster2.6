@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "Credential": {
+      "title": "User Credential",
+      "description": "User credential for local app authentication.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["username", "password", "name", "email", "role"]
+    },
+    "Tier": {
+      "title": "Hierarchical Tier Configuration",
+      "description": "Organizational tiers config.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "pointsRequired": { "type": "integer" },
+        "color": { "type": "string" }
+      },
+      "required": ["id", "name", "pointsRequired"]
+    },
+    "Certification": {
+      "title": "Certification Definition",
+      "description": "Available professional certifications.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "code": { "type": "string" },
+        "color": { "type": "string" },
+        "points": { "type": "integer" }
+      },
+      "required": ["id", "title", "code", "points"]
+    },
+    "Agent": {
+      "title": "Roster Agent",
+      "description": "Tech support agent profile details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "initials": { "type": "string" },
+        "color": { "type": "string" },
+        "title": { "type": "string" },
+        "team": { "type": "string" },
+        "level": { "type": "string" },
+        "points": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "AgentProfile": {
+      "title": "Agent Individual Profile",
+      "description": "Coaching, skills, specialties and action plans for an agent.",
+      "type": "object",
+      "properties": {
+        "agentId": { "type": "string" },
+        "skills": { "type": "array" },
+        "specialties": { "type": "array" },
+        "improvementAreas": { "type": "array" },
+        "painPoints": { "type": "array" },
+        "actionPlan": { "type": "array" }
+      },
+      "required": ["agentId"]
+    },
+    "CRMRequirement": {
+      "title": "CRM Requirement",
+      "description": "Requirement data from CRM.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ID": { "type": "string" },
+        "Técnico Asignado": { "type": "string" },
+        "Estado": { "type": "string" },
+        "Prioridad": { "type": "string" },
+        "sprint_trabajo": { "type": "string" }
+      },
+      "required": ["id"]
+    },
+    "WeeklyBacklog": {
+      "title": "Weekly Backlog Item",
+      "description": "Requirement in transient weekly backlog.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ID": { "type": "string" },
+        "Técnico Asignado": { "type": "string" },
+        "Estado": { "type": "string" },
+        "sprint_trabajo": { "type": "string" },
+        "estado_registro": { "type": "string" }
+      },
+      "required": ["id"]
+    },
+    "CalendarEvent": {
+      "title": "Operational Calendar Event",
+      "description": "Designation event stored in Firestore.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "agentId": { "type": "string" },
+        "type": { "type": "string" },
+        "date": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "required": ["id", "agentId", "type", "date"]
+    },
+    "PersonalReminderDoc": {
+      "title": "Agent Personal Reminders Doc",
+      "description": "Document holding reminders list for a specific agent.",
+      "type": "object",
+      "properties": {
+        "agentId": { "type": "string" },
+        "reminders": { "type": "array" }
+      },
+      "required": ["agentId", "reminders"]
+    },
+    "Contractor": {
+      "title": "Contractor Profile",
+      "description": "Details of third-party contractor or service provider.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "specialty": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "status": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "taxId": { "type": "string" },
+        "slaTarget": { "type": "integer" },
+        "supervisorAgentId": { "type": "string" },
+        "notes": { "type": "string" },
+        "documents": { "type": "object" },
+        "audits": { "type": "array" }
+      },
+      "required": ["id", "name", "type", "specialty", "email", "status"]
+    }
+  },
+  "firestore": {
+    "calendarEvents": {
+      "schema": "CalendarEvent",
+      "description": "Collection of operational calendar designation events."
+    },
+    "personalReminders": {
+      "schema": "PersonalReminderDoc",
+      "description": "Collection of personal reminders indexed by agent ID."
+    },
+    "credentials": {
+      "schema": "Credential",
+      "description": "Collection of credentials."
+    },
+    "tiers": {
+      "schema": "Tier",
+      "description": "Collection of tier configurations."
+    },
+    "certifications": {
+      "schema": "Certification",
+      "description": "Collection of certifications."
+    },
+    "agents": {
+      "schema": "Agent",
+      "description": "Collection of agents."
+    },
+    "profiles": {
+      "schema": "AgentProfile",
+      "description": "Collection of agent individual profiles."
+    },
+    "roster_agentes": {
+      "schema": "Agent",
+      "description": "Collection of agents (Roster)."
+    },
+    "requerimientos_en_curso": {
+      "schema": "CRMRequirement",
+      "description": "Active requirements from CRM."
+    },
+    "backlog_semanal": {
+      "schema": "WeeklyBacklog",
+      "description": "Transient weekly backlog items."
+    },
+    "historico_completados": {
+      "schema": "WeeklyBacklog",
+      "description": "Historical archive of completed requirements."
+    },
+    "contractors": {
+      "schema": "Contractor",
+      "description": "Collection of contractors and service providers."
+    }
+  }
+}

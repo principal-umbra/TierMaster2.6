@@ -1,0 +1,801 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Hanken Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Premium Complementary Blue Tone Hierarchy */
+  --blue-primary-navy: #0b1a30;    /* Tono 1: Deep Technical Blue (Navigation Core) */
+  --blue-active-cobalt: #1e40af;   /* Tono 2: Accessible Vivid Action Blue (White-text compliant) */
+  --blue-soft-ice: #f1f5f9;        /* Tono 3: Soft Slate Blue (Element backdrops & subtle borders) */
+  --blue-canvas-matte: #e2e8f0;    /* Tono 4: Premium Tinted Workspace Base (Replaces raw white backgrounds) */
+
+  /* Muted Elegant Red Accent */
+  --color-soft-red: #da294c;       /* Muted Coral Ruby - safe, elegant, and visible without vibration */
+}
+
+/* Base resets & Clean high-contrast neutral-tint palette */
+body {
+  background-color: #e2ecf8 !important; /* Premium Slate Light Blue tone canvas background */
+  background-image: 
+    radial-gradient(rgba(30, 58, 138, 0.12) 1.5px, transparent 1.5px) !important;
+  background-size: 24px 24px !important;
+  color: #0f172a !important; /* High contrast dark slate (highly accessible readable body) */
+  font-family: var(--font-sans);
+  font-weight: 500;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+  border: 2px solid #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 
+   ==========================================================================
+   PRESTIGIOUS TWIN-AXIS CANVAS: Floating Cockpit
+   ==========================================================================
+*/
+
+#root {
+  background-color: #e2ecf8 !important;
+  min-height: 100vh;
+}
+
+#tier-master-viewport {
+  background-color: #e2ecf8 !important;
+  padding: 16px !important;
+  gap: 16px !important;
+  display: flex !important;
+  box-sizing: border-box !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow: hidden !important;
+}
+
+/* 
+   ==========================================================================
+   COCKPIT SIDE NAV DRAWER (FLOATING COUPLING)
+   ==========================================================================
+*/
+#side-navigator {
+  background-color: var(--blue-primary-navy) !important;
+  background-image: linear-gradient(180deg, #10223b 0%, #060e1a 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 30px -5px rgba(15, 23, 42, 0.15) !important;
+  margin: 0 !important;
+  height: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+#side-navigator * {
+  color: #94a3b8 !important;
+}
+
+#side-navigator h1 {
+  color: #ffffff !important;
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+}
+
+#side-navigator p, 
+#side-navigator span.tracking-wider {
+  color: #64748b !important;
+}
+
+/* Soft red highlight in core branding trophies */
+#side-navigator .material-symbols-outlined.text-transparent,
+#side-navigator [class*="text-violet-400"] {
+  color: var(--color-soft-red) !important;
+  -webkit-text-fill-color: var(--color-soft-red) !important;
+  background-image: none !important;
+}
+
+/* Nav Item buttons */
+#side-navigator button {
+  border-radius: 10px !important;
+  border: 1px solid transparent !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  padding: 10.5px 14px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer;
+}
+
+#side-navigator button:not([class*="bg-indigo-650"]):not([class*="bg-gradient-to-r"]):hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  transform: translateX(4px) !important;
+}
+
+/* Active buttons styled with elite navy and tasteful soft red accent */
+#side-navigator button[class*="bg-gradient-to-r"],
+#side-navigator button[class*="bg-indigo-650"],
+#side-navigator button[class*="bg-indigo-600"] {
+  background-image: none !important;
+  background-color: var(--blue-active-cobalt) !important;
+  color: #ffffff !important;
+  border-left: 3.5px solid var(--color-soft-red) !important;
+  border-radius: 4px 10px 10px 4px !important;
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25) !important;
+}
+
+#side-navigator button[class*="bg-gradient-to-r"] *,
+#side-navigator button[class*="bg-indigo-650"] *,
+#side-navigator button[class*="bg-indigo-600"] * {
+  color: #ffffff !important;
+}
+
+#side-navigator div[class*="border-t"] {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+/* 
+   ==========================================================================
+   MAIN CONTENT WORKBENCH (REPLACED RAW WHITE BY SOLID HIGH-PRESTIGE SLATE BLUE TINT)
+   ==========================================================================
+*/
+#workspace-viewport {
+  background-color: #e6effa !important; /* Elegant premium light ice-blue workspace canvas background */
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Header bar inside the viewport */
+header#header-bar {
+  background-color: #e6effa !important;
+  border-bottom: 1.5px solid #cbd5e1 !important;
+  padding: 14px 24px !important;
+}
+
+header#header-bar h2 {
+  color: #0f172a !important;
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+}
+
+header#header-bar span {
+  color: #475569 !important;
+}
+
+/* Metric counts override */
+header#header-bar [class*="text-indigo-400"],
+header#header-bar [class*="text-[#818cf8]"],
+header#header-bar [class*="text-cyan-400"],
+header#header-bar [class*="text-emerald-400"] {
+  color: var(--blue-active-cobalt) !important;
+  background-image: none !important;
+}
+
+main.custom-scrollbar {
+  background-color: #e6effa !important; /* Soft, readable elegant light blue workspace background floor */
+  padding: 20px !important;
+}
+
+/* 
+   ==========================================================================
+   CARDS AND MAIN COMPONENT PANELS - Crisp design contrast
+   ==========================================================================
+*/
+[class*="bg-[#111827]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#090d16]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#0d1222]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#0f172a]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-slate-950"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-slate-900"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#0a0e1a]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#111827]/60"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#111827]/70"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+[class*="bg-[#0c101d]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
+.glass-panel:not(.fixed):not(.keep-dark-bg),
+#card-action-bar:not(.keep-dark-bg),
+#leaderboard-podium-section div[class*="border-slate-850"]:not(.keep-dark-bg) {
+  background-color: #ffffff !important; /* Soft paper white card base */
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1.5px solid #cbd5e1 !important; /* Thin drawing border */
+  border-radius: 12px !important;
+  box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Expand hover highlights beautifully */
+[class*="bg-[#111827]/60"]:hover,
+[class*="bg-[#111827]/70"]:hover,
+[class*="bg-slate-900/60"]:hover,
+.glass-card-hover:hover,
+#leaderboard-podium-section div[class*="rounded-2xl"]:hover {
+  border-color: var(--blue-active-cobalt) !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08) !important;
+  transform: translateY(-1.5px) !important;
+}
+
+/* Horizontal tab rows, table rows, and dividers */
+[class*="bg-slate-950/80"]:not(.keep-dark-bg),
+[class*="bg-slate-950/40"]:not(.keep-dark-bg),
+[class*="bg-slate-900/40"]:not(.keep-dark-bg),
+[class*="bg-slate-900/10"]:not(.keep-dark-bg),
+[class*="bg-slate-900/50"]:not(.keep-dark-bg),
+[class*="bg-slate-900/60"]:not(.keep-dark-bg),
+table tbody tr:hover,
+#workspace-tools-subnav {
+  background-color: #f1f5f9 !important; /* Tinted layout floor rows */
+  border-color: #cbd5e1 !important;
+}
+
+/* Standard readable gray lines */
+[class*="border-white/5"],
+[class*="border-white/10"],
+[class*="border-white/20"],
+[class*="border-slate-800"],
+[class*="border-slate-850"],
+[class*="border-slate-750"],
+[class*="border-[#1e293b]"],
+[class*="border-slate-700"],
+hr {
+  border-color: #cbd5e1 !important;
+}
+
+/* 
+   ==========================================================================
+   CLEAN COGNITIVE TYPOGRAPHY
+   ==========================================================================
+*/
+main [class*="text-slate-100"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-200"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-250"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-350"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-300"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-50"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-white"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main .text-white:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main h1:not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main h2:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main h3:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main h4:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main h5:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main strong:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main p strong:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *) {
+  color: #0f172a !important; /* Highly solid black-navy for maximum contrast and legibility */
+  text-shadow: none !important;
+}
+
+main p:not(button *):not([class*="bg-"]):not([style*="background"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *), 
+main span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main div:not([class*="bg-"]):not([style*="background"]):not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *) {
+  color: #273444 !important; /* Sharp gray text for readability */
+}
+
+main [class*="text-slate-400"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-450"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-500"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-650"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-550"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-600"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+label:not(button *):not(.keep-dark-bg):not(.keep-dark-bg *),
+span[class*="text-slate-"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *) {
+  color: #475569 !important; /* Deep gray descriptor text */
+}
+
+/* Remove stray text backgrounds & text gradient clips */
+main .text-transparent:not(button *):not(.bg-active *),
+main [class*="text-transparent"]:not(button *):not(.bg-active *),
+main [class*="bg-clip-text"]:not(button *):not(.bg-active *) {
+  color: #0f172a !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  background-image: none !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Correct specific indicators to active cobalt */
+main span.text-indigo-400:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main span[class*="text-indigo-400"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main span.text-[#818cf8]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main span[class*="text-[#818cf8]"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *) {
+  color: var(--blue-active-cobalt) !important;
+  background-image: none !important;
+}
+
+/* 
+   ==========================================================================
+   ACCESSIBLE DYNAMIC BUTTON SYSTEM (White text on active blue is fully compliant)
+   ==========================================================================
+*/
+[class*="bg-indigo-600"],
+[class*="bg-violet-600"],
+[class*="bg-indigo-700"],
+[class*="bg-indigo-600/90"],
+[class*="bg-violet-600/90"],
+[class*="from-indigo-600"],
+[class*="from-violet-600"],
+[class*="to-indigo-600"],
+[class*="to-violet-600"],
+[class*="hover:from-indigo-500"],
+[class*="hover:from-violet-500"],
+.bg-violet-600,
+#award-insignia-trigger {
+  background-image: none !important;
+  background-color: var(--blue-active-cobalt) !important;
+  color: #ffffff !important;
+  border: 1px solid #172554 !important; /* Deep navy border for visual definition */
+  box-shadow: 0 2px 5px rgba(30, 58, 138, 0.12) !important;
+  border-radius: 8px !important;
+  text-shadow: none !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+[class*="bg-indigo-600"]:hover,
+[class*="bg-violet-600"]:hover,
+[class*="from-indigo-600"]:hover,
+[class*="from-violet-600"]:hover,
+.bg-violet-600:hover,
+#award-insignia-trigger:hover {
+  background-image: none !important;
+  background-color: #2563eb !important; /* Beautiful accessible brighter cobalt blue on hover */
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 
+   ==========================================================================
+   MUTED RUBY-CORAL ACCENTS (ACCESSIBLE RED ACTIONS)
+   ==========================================================================
+*/
+button[id*="eval-btn-"], 
+button[type="submit"], 
+input[id*="publish"], 
+button[id*="publish"],
+button[id*="submit-eval"],
+[class*="bg-[#c45b3e]"],
+[class*="bg-red-600"],
+.bg-red-600 {
+  background-image: none !important;
+  background-color: var(--color-soft-red) !important;
+  color: #ffffff !important;
+  border: 1px solid #9f1239 !important; /* Deep definition border to avoid low contrast */
+  box-shadow: 0 2px 6px rgba(218, 41, 76, 0.15) !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+
+button[id*="eval-btn-"]:hover, 
+button[type="submit"]:hover, 
+input[id*="publish"]:hover, 
+button[id*="publish"]:hover,
+button[id*="submit-eval"]:hover,
+[class*="bg-[#c45b3e]"]:hover,
+[class*="bg-red-600"]:hover,
+.bg-red-600:hover {
+  background-image: none !important;
+  background-color: #be123c !important; /* Darker vibrant ruby on hover */
+  border-color: #881337 !important;
+  box-shadow: 0 4px 12px rgba(218, 41, 76, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Underlines and indicators */
+[class*="border-indigo-500"]:not(input):not(select):not(textarea), 
+[class*="border-indigo-600"]:not(input):not(select):not(textarea),
+[class*="border-violet-500"]:not(input):not(select):not(textarea) {
+  border-color: var(--color-soft-red) !important;
+}
+
+/* Custom Blue Button styles (bg-blue-800 & bg-blue-900) and list view display contrast */
+[class*="bg-blue-800"],
+[class*="bg-blue-900"],
+.bg-blue-800,
+.bg-blue-900 {
+  background-color: var(--blue-active-cobalt) !important;
+  color: #ffffff !important;
+  border: 1px solid #172554 !important;
+}
+
+[class*="bg-blue-800"] *,
+[class*="bg-blue-900"] *,
+.bg-blue-800 *,
+.bg-blue-900 * {
+  color: #ffffff !important;
+}
+
+/* Tiers tags explicitly style their own colors */
+
+/* Accessible Team Badges / Pills */
+span[class*="bg-indigo-950"]:not(.keep-dark-bg *),
+span[class*="bg-indigo-900"]:not(.keep-dark-bg *),
+span[class*="bg-slate-800"]:not(.keep-dark-bg *):not(.text-white-keep),
+span[class*="bg-slate-900"]:not(.keep-dark-bg *):not(.text-white-keep),
+span[class*="bg-slate-950"]:not(.keep-dark-bg *):not(.text-white-keep),
+span[class*="bg-slate-700"]:not(.keep-dark-bg *):not(.text-white-keep) {
+  background-color: #f1f5f9 !important; /* Soft light slate background */
+  color: #0f172a !important; /* Rich deep slate text for excellent contrast */
+  border: 1px solid #cbd5e1 !important;
+}
+span[class*="bg-indigo-950"]:not(.keep-dark-bg *) *,
+span[class*="bg-indigo-900"]:not(.keep-dark-bg *) *,
+span[class*="bg-slate-800"]:not(.keep-dark-bg *):not(.text-white-keep) *,
+span[class*="bg-slate-900"]:not(.keep-dark-bg *):not(.text-white-keep) *,
+span[class*="bg-slate-950"]:not(.keep-dark-bg *):not(.text-white-keep) *,
+span[class*="bg-slate-700"]:not(.keep-dark-bg *):not(.text-white-keep) * {
+  color: #0f172a !important;
+}
+
+/* Ensure AgentAvatarLogo initials text always uses its calculated contrast color */
+.agent-avatar-initials {
+  color: inherit !important;
+}
+
+/* Solid dark background child color rules to preserve pristine white contrast */
+[class*="bg-indigo-600"] *,
+[class*="bg-indigo-700"] *,
+[class*="bg-emerald-600"] *,
+[class*="bg-rose-600"] *,
+[class*="bg-red-650"] *,
+[class*="progress-stripe"] * {
+  color: #ffffff !important;
+}
+
+/* Form slider handles */
+input[type="range"] {
+  accent-color: var(--color-soft-red) !important;
+}
+
+/* 
+   ==========================================================================
+   BADGES, RANGE SELECTION & FORM CONTROLS
+   ==========================================================================
+*/
+input, select, textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue-active-cobalt) !important;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1) !important;
+}
+
+/* Specific high-contrast dark styling for inputs and selects inside leaderboard card header */
+main #leaderboard-table-section input,
+main #leaderboard-table-section select {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1.5px solid #334155 !important;
+}
+
+main #leaderboard-table-section select option {
+  background-color: #0d1527 !important;
+  color: #f8fafc !important;
+}
+
+main #leaderboard-table-section input::placeholder {
+  color: #94a3b8 !important;
+}
+
+main #leaderboard-table-section input:focus,
+main #leaderboard-table-section select:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* 
+   ==========================================================================
+   LEADERBOARD (1st Rank Accent line style)
+   ==========================================================================
+*/
+#leaderboard-podium-section div[class*="border-amber-500"] {
+  border-top: 5px solid var(--color-soft-red) !important;
+}
+
+/* Discard raw blinking lights from the UI */
+.cosmic-dust-glow,
+.scrum-glow {
+  display: none !important;
+}
+
+/* 
+   ==========================================================================
+   STICKY NOTES SYSTEM (CLEAN MATTE MINIMAL GREY & WATER SHADES)
+   ==========================================================================
+*/
+[class*="bg-[#f3e8ff]"], .bg-purple-50\/50, .border-purple-200\/80 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* 
+   ==========================================================================
+   PROMOTION POPUP INTERACTION BANNER
+   ==========================================================================
+*/
+.fixed.top-6.right-6 {
+  background-image: linear-gradient(135deg, var(--blue-primary-navy) 0%, var(--color-soft-red) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25) !important;
+  border-radius: 12px !important;
+}
+.fixed.top-6.right-6 h4, 
+.fixed.top-6.right-6 p, 
+.fixed.top-6.right-6 strong {
+  color: #ffffff !important;
+}
+
+/* 
+   ==========================================================================
+   ACCESSIBILITY & CONTRAST SAFETY OVERRIDES FOR DYNAMIC BUTTONS
+   ==========================================================================
+*/
+main button,
+main button *,
+main [class*="bg-indigo-"]:not([class*="bg-indigo-50"]):not([class*="bg-indigo-100"]):not([class*="bg-indigo-200"]):not([class*="hover:"]):not([class*="focus:"]),
+main [class*="bg-blue-"]:not([class*="bg-blue-50"]):not([class*="bg-blue-100"]):not([class*="bg-blue-200"]):not([class*="hover:"]):not([class*="focus:"]),
+main [class*="bg-emerald-"]:not([class*="bg-emerald-50"]):not([class*="bg-emerald-100"]):not([class*="hover:"]):not([class*="focus:"]),
+main [class*="bg-rose-"]:not([class*="bg-rose-50"]):not([class*="bg-rose-100"]):not([class*="hover:"]):not([class*="focus:"]),
+main [class*="bg-red-"]:not([class*="bg-red-50"]):not([class*="bg-red-100"]):not([class*="hover:"]):not([class*="focus:"]) {
+  text-shadow: none !important;
+}
+
+main button[class*="bg-indigo-"]:not([class*="bg-indigo-50"]):not([class*="bg-indigo-100"]):not([class*="bg-indigo-200"]):not([class*="hover:"]):not([class*="focus:"]) *,
+main button[class*="bg-blue-"]:not([class*="bg-blue-50"]):not([class*="bg-blue-100"]):not([class*="bg-blue-200"]):not([class*="hover:"]):not([class*="focus:"]) *,
+main button[class*="bg-emerald-"]:not([class*="bg-emerald-50"]):not([class*="bg-emerald-100"]):not([class*="hover:"]):not([class*="focus:"]) *,
+main button[class*="bg-rose-"]:not([class*="bg-rose-50"]):not([class*="bg-rose-100"]):not([class*="hover:"]):not([class*="focus:"]) *,
+main button[class*="bg-red-"]:not([class*="bg-red-50"]):not([class*="bg-red-100"]):not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-indigo-600"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-indigo-800"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-indigo-900"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-blue-600"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-blue-800"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-blue-900"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-emerald-600"]:not([class*="hover:"]):not([class*="focus:"]) *,
+main [class*="bg-rose-600"]:not([class*="hover:"]):not([class*="focus:"]) * {
+  color: #ffffff !important;
+}
+
+main button[class*="bg-indigo-"]:not([class*="bg-indigo-50"]):not([class*="bg-indigo-100"]):not([class*="bg-indigo-200"]):not([class*="hover:"]):not([class*="focus:"]),
+main button[class*="bg-blue-"]:not([class*="bg-blue-50"]):not([class*="bg-blue-100"]):not([class*="bg-blue-200"]):not([class*="hover:"]):not([class*="focus:"]),
+main button[class*="bg-emerald-"]:not([class*="bg-emerald-50"]):not([class*="bg-emerald-100"]):not([class*="hover:"]):not([class*="focus:"]),
+main button[class*="bg-rose-"]:not([class*="bg-rose-50"]):not([class*="bg-rose-100"]):not([class*="hover:"]):not([class*="focus:"]),
+main button[class*="bg-red-"]:not([class*="bg-red-50"]):not([class*="bg-red-100"]):not([class*="hover:"]):not([class*="focus:"]),
+main .text-white-keep,
+main .text-white-keep * {
+  color: #ffffff !important;
+}
+
+/* Fix active toggle view buttons and icons */
+main button[class*="bg-blue-800"] .material-symbols-outlined,
+main button[class*="bg-indigo-600"] .material-symbols-outlined,
+main button.bg-blue-800 .material-symbols-outlined,
+main button.bg-indigo-600 .material-symbols-outlined {
+  color: #ffffff !important;
+}
+
+/* Guarantee beautiful translucent backdrop blur for fixed overlays, drawers, and sheets */
+.fixed.backdrop-blur-md,
+.fixed[class*="backdrop-blur"] {
+  background-color: rgba(15, 23, 42, 0.35) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Google Sign-In Button Styles */
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: none;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #747775 !important;
+  border-radius: 4px !important;
+  box-sizing: border-box !important;
+  color: #1f1f1f !important;
+  cursor: pointer;
+  font-family: 'Roboto', arial, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  height: 40px !important;
+  letter-spacing: 0.25px !important;
+  outline: none !important;
+  overflow: hidden !important;
+  padding: 0 12px !important;
+  position: relative !important;
+  text-align: center !important;
+  transition: background-color .218s, border-color .218s, box-shadow .218s !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  width: auto !important;
+  max-width: 400px !important;
+  min-width: min-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.gsi-material-button * {
+  color: #1f1f1f !important;
+}
+
+.gsi-material-button .gsi-material-button-icon {
+  height: 20px !important;
+  min-width: 20px !important;
+  width: 20px !important;
+  margin-right: 12px !important;
+}
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  align-items: center !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  height: 100% !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  flex-grow: 1 !important;
+  font-family: 'Roboto', arial, sans-serif !important;
+  font-weight: 500 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  vertical-align: top !important;
+}
+
+.gsi-material-button .gsi-material-button-state {
+  transition: opacity .218s;
+  bottom: 0 !important;
+  left: 0 !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+}
+
+.gsi-material-button:hover {
+  background-color: #f2f2f2 !important;
+  border-color: #747775 !important;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15) !important;
+}
+
+.gsi-material-button:hover .gsi-material-button-state {
+  opacity: 0.04 !important;
+}
+
+.gsi-material-button:focus {
+  background-color: #ffffff !important;
+  border-color: #0b57d0 !important;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15) !important;
+}
+
+.gsi-material-button:active {
+  background-color: #f2f2f2 !important;
+}
+
+/* Ensure high-contrast text and buttons inside keep-dark-bg containers universally */
+.keep-dark-bg,
+.keep-dark-bg *,
+main .keep-dark-bg,
+main .keep-dark-bg * {
+  text-shadow: none !important;
+}
+
+.keep-dark-bg span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
+.keep-dark-bg div:not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
+.keep-dark-bg h1:not([class*="bg-"]),
+.keep-dark-bg h2:not([class*="bg-"]),
+.keep-dark-bg h3:not([class*="bg-"]),
+.keep-dark-bg h4:not([class*="bg-"]),
+.keep-dark-bg p:not([class*="bg-"]),
+.keep-dark-bg th:not([class*="bg-"]),
+.keep-dark-bg td:not([class*="bg-"]),
+main .keep-dark-bg span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
+main .keep-dark-bg div:not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
+main .keep-dark-bg h1:not([class*="bg-"]),
+main .keep-dark-bg h2:not([class*="bg-"]),
+main .keep-dark-bg h3:not([class*="bg-"]),
+main .keep-dark-bg h4:not([class*="bg-"]),
+main .keep-dark-bg p:not([class*="bg-"]),
+main .keep-dark-bg th:not([class*="bg-"]),
+main .keep-dark-bg td:not([class*="bg-"]) {
+  color: #f8fafc !important; /* Pristine readable light text */
+}
+
+/* Explicit white text rule for text-white-keep */
+.text-white-keep,
+.text-white-keep *,
+main .text-white-keep,
+main .text-white-keep * {
+  color: #ffffff !important;
+}
+
+/* Ensure title and subheadings are readable and don't get overriden by dark text styles */
+main .keep-dark-bg span.text-slate-400,
+main .keep-dark-bg [class*="text-slate-400"] {
+  color: #cbd5e1 !important; /* Beautiful slate gray */
+}
+
+main .keep-dark-bg span.text-slate-300,
+main .keep-dark-bg [class*="text-slate-300"] {
+  color: #f1f5f9 !important; /* Beautiful off-white */
+}
+
+/* Ensure the buttons inside keep-dark-bg have correct text shadow and basic layout styles */
+main .keep-dark-bg button {
+  text-shadow: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Base styles for status badges inside keep-dark-bg */
+main .keep-dark-bg button .material-symbols-outlined {
+  font-size: 16px !important;
+}
+
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+main .keep-dark-bg .text-emerald-300, main .keep-dark-bg [class*="text-emerald-"] {
+  color: #6ee7b7 !important;
+}
+main .keep-dark-bg .text-cyan-300, main .keep-dark-bg [class*="text-cyan-"] {
+  color: #67e8f9 !important;
+}
+main .keep-dark-bg .text-indigo-200, main .keep-dark-bg [class*="text-indigo-"] {
+  color: #c7d2fe !important;
+}
+main .keep-dark-bg .text-rose-200, main .keep-dark-bg .text-rose-300, main .keep-dark-bg [class*="text-rose-"] {
+  color: #fda4af !important;
+}
+main .keep-dark-bg .text-amber-200, main .keep-dark-bg [class*="text-amber-"] {
+  color: #fde68a !important;
+}
+main .keep-dark-bg .text-blue-300, main .keep-dark-bg [class*="text-blue-"] {
+  color: #93c5fd !important;
+}
+
+main .keep-dark-bg [class*="bg-[#0f172a]"] {
+  background-color: #0f172a !important;
+}
+main .keep-dark-bg table tbody tr:hover {
+  background-color: rgba(30, 41, 59, 0.3) !important;
+}

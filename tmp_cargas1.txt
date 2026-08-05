@@ -1,0 +1,151 @@
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                      Total: {listToRender.length}
+                    </span>
+                  </div>
+
+                  {listToRender.length === 0 ? (
+                    <div className="p-12 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl bg-slate-50/40">
+                      No hay registros que coincidan con los filtros de búsqueda.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                      {listToRender.map(renderContractorCard)}
+                    </div>
+                  )}
+                </div>
+              );
+            })()
+          )}
+        </div>
+      )}
+
+      {activeSubTab === 'board' && (
+        <div className="space-y-6">
+          {/* Main Board View Toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-3">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Visualización de Trabajo</span>
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/60 w-fit">
+                <button
+                  type="button"
+                  onClick={() => setBoardViewMode('list')}
+                  className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+                    boardViewMode === 'list'
+                      ? 'bg-white text-slate-950 shadow-xs border border-slate-200/55'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <Activity className="w-4 h-4 text-emerald-600" />
+                  <span>Rendimiento Individual (Lista)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBoardViewMode('kanban')}
+                  className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+                    boardViewMode === 'kanban'
+                      ? 'bg-white text-slate-950 shadow-xs border border-slate-200/55'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <SlidersHorizontal className="w-4 h-4 text-blue-600" />
+                  <span>Flujo Kanban (Columnas)</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="text-[11px] font-bold text-slate-500 bg-slate-100 border border-slate-200/60 px-3 py-1.5 rounded-lg flex items-center gap-1.5 self-start sm:self-center">
+              <Users className="w-3.5 h-3.5 text-slate-400" />
+              <span>Contratistas en Registro: {contractors.length}</span>
+            </div>
+          </div>
+
+          {/* Board filters toolbar */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              {/* Search board input */}
+              <div className="relative w-full sm:w-64">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Search className="w-4 h-4 text-slate-400" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Buscar requerimiento, ID o cliente..."
+                  value={boardSearchQuery}
+                  onChange={(e) => setBoardSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white placeholder-slate-400 text-slate-800 focus:outline-none focus:border-slate-400 transition"
+                />
+              </div>
+
+              {/* Contractor filter */}
+              <select
+                value={boardContractorFilter}
+                onChange={(e) => setBoardContractorFilter(e.target.value)}
+                className="text-xs border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:border-slate-400"
+              >
+                <option value="Todos">Todos los contratistas</option>
+                {contractors.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.id} - {c.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Priority filter */}
+              <select
+                value={boardPriorityFilter}
+                onChange={(e) => setBoardPriorityFilter(e.target.value)}
+                className="text-xs border border-slate-200 bg-white rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:border-slate-400"
+              >
+                <option value="Todos">Todas las prioridades</option>
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+
+            {/* View switcher (Group by) - Only shown in Kanban mode */}
+            {boardViewMode === 'kanban' ? (
+              <div className="flex items-center gap-1.5 self-end md:self-center">
+                <span className="text-[11px] text-slate-400 font-medium font-sans">Agrupar por:</span>
+                <div className="flex items-center border border-slate-200 bg-slate-50 p-0.5 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setBoardGroupBy('contractor')}
+                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                      boardGroupBy === 'contractor'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Contratista
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBoardGroupBy('status')}
+                    className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                      boardGroupBy === 'status'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Estado CRM
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-[11px] text-slate-400 font-medium bg-slate-50 px-2.5 py-1 rounded-md border border-slate-150 font-sans">
+                Métricas de Proveedores Independientes
+              </div>
+            )}
+          </div>
+
+          {/* List View or Kanban View based on boardViewMode */}
+          {boardViewMode === 'list' ? (
+            /* LIST VIEW: Performance Metrics for each contractor */
+            <div className="space-y-8">
+              {/* Proveedores de Servicio (Service Providers) */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 border-b border-slate-150 pb-2">
+                  <Building2 className="w-5 h-5 text-purple-600" />

@@ -1,0 +1,118 @@
+isSupervisor
+loggedInAgent
+currentAgentId
+[specialDuties, setSpecialDuties]
+[absences, setAbsences]
+[programmedVisits, setProgrammedVisits]
+[absenceRequests, setAbsenceRequests]
+[rejectingRequestId, setRejectingRequestId]
+[rejectionNote, setRejectionNote]
+[selectedTaskForModal, setSelectedTaskForModal]
+[taskModalTab, setTaskModalTab]
+[isChangingAssignee, setIsChangingAssignee]
+[modalFollowUpInput, setModalFollowUpInput]
+[modalReportInput, setModalReportInput]
+[modalAuthCode, setModalAuthCode]
+[isReprogrammingDate, setIsReprogrammingDate]
+[tempScheduledDate, setTempScheduledDate]
+[tempStartDate, setTempStartDate]
+[tempDueDate, setTempDueDate]
+[tempType, setTempType]
+[tempFrequency, setTempFrequency]
+[tempRecurrenceDayOfWeek, setTempRecurrenceDayOfWeek]
+[tempRecurrenceDayOfMonth, setTempRecurrenceDayOfMonth]
+[tempRecurrenceMonthOfYear, setTempRecurrenceMonthOfYear]
+[tempHasNoDate, setTempHasNoDate]
+[tempHasEndDate, setTempHasEndDate]
+[tempRecurrenceEndDate, setTempRecurrenceEndDate]
+[showDeleteConfirm, setShowDeleteConfirm]
+[calendarEvents, setCalendarEvents]
+regularNonA1NonS1Agents
+nonUserAndSpecificAgents
+pendingAbsenceRequests
+nonPendingAbsenceRequests
+agentsExceptA1
+activeInternalTasksCount
+myActiveInternalTasksCount
+totalSuccessTasksCount
+recalculateAndScheduleRotations
+handleAutoScheduleNextWeeks
+handleSaveChangesToFirestore
+isSyncingDesignacionesRef
+isPast
+getNextMonday
+getNextSunday
+getRandomAgentByTier
+isSyncingJornadaRef
+isDirtyAusenciasRef
+isSyncingAusenciasRef
+[toast, setToast]
+showToast
+syncAsistenciaChange
+handleCheckIn
+handleCheckOut
+handleUpdateStatus
+handleUpdateSchedule
+handleUpdateMyStatus
+handleSaveWeeklySchedule
+handleAssignSpecialDuty
+[newAbsence, setNewAbsence]
+[autoApproveAbsence, setAutoApproveAbsence]
+handleAddAbsenceSubmit
+approveRequest
+rejectRequest
+confirmRejectRequest
+handleDeleteAbsence
+[activeTaskType, setActiveTaskType]
+[taskViewFilter, setTaskViewFilter]
+[taskSearchQuery, setTaskSearchQuery]
+[isInternalTaskDrawerOpen, setIsInternalTaskDrawerOpen]
+[isContractorTaskDrawerOpen, setIsContractorTaskDrawerOpen]
+[newInternalTask, setNewInternalTask]
+[newContractorTask, setNewContractorTask]
+[completingInternalTaskId, setCompletingInternalTaskId]
+[internalTaskReport, setInternalTaskReport]
+[followingUpContractorId, setFollowingUpContractorId]
+[contractorFollowUpText, setContractorFollowUpText]
+[contractorStatusSelect, setContractorStatusSelect]
+handleCreateInternalTask
+handleUpdateInternalTaskStatus
+handleOpenCompleteInternalTask
+handleSaveInternalTaskCompletion
+handleDeleteInternalTask
+handleCreateContractorTask
+handleOpenFollowUpContractor
+handleSaveContractorFollowUp
+handleDeleteContractorTask
+[calendarViewDate, setCalendarViewDate]
+[selectedCalendarDay, setSelectedCalendarDay]
+[quickEventForm, setQuickEventForm]
+handleAddCalendarEvent
+handleRemoveCalendarEvent
+handleRemoveIsolatedEvent
+getDayWorkloadIntensity
+todayStrForMetrics
+activeAbsenceAgentIds
+activeColaborators
+availableColaborators
+outOfOfficeColaborators
+absentColaborators
+currentGuardiaAgent
+currentChatAgent
+currentAlertasAgent
+getAgentActiveTasksCount
+getDaysInMonth
+getFirstDayOfMonth
+handlePrevMonth
+handleNextMonth
+monthNames
+calendarYear
+calendarMonth
+daysInMonth
+firstDayIdx
+calendarDaysArray
+leadingBlanks
+currentAgentState
+currentStatus
+isCheckedIn
+isCheckedOut

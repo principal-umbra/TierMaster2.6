@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Tier Master 1.8",
+  "description": "Suite de gestión, monitoreo y evaluación de rendimiento para equipos técnicos y soporte basado en Scrum, Tiers y KPIs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

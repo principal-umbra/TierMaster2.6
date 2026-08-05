@@ -1,0 +1,551 @@
+            {/* Modal Form */}
+            <form onSubmit={handleSaveTask} className="flex-1 overflow-hidden flex flex-col">
+              
+              {/* Inner content grid (Left: Basic Info, Right: Advanced Scheduling) */}
+              <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-h-[85vh]">
+                
+                {/* Left Column (Span 7): Basic Fields */}
+                <div className="lg:col-span-7 space-y-3">
+                  
+                  {selectedBacklogRow && (
+                    <div className="p-2.5 bg-indigo-50 border border-indigo-100 rounded-xl flex gap-2 items-center">
+                      <Link className="w-4 h-4 text-indigo-600 shrink-0 animate-pulse" />
+                      <div className="text-xs text-indigo-900 leading-snug">
+                        <span className="font-semibold text-[9px] uppercase tracking-wider text-indigo-600 mr-2">Vínculo CRM</span>
+                        <strong className="font-bold">{selectedBacklogRow["ID"]}</strong> - {selectedBacklogRow["Subject"]}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Title */}
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Título de la Tarea *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formTitle}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="Ej: Backup..."
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800"
+                      />
+                    </div>
+                    {/* CRM Ticket Search */}
+                    <div className="space-y-1 relative">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Vincular a Ticket del CRM</label>
+                      <input
+                        type="text"
+                        value={formTicketId}
+                        onChange={(e) => setFormTicketId(e.target.value)}
+                        placeholder="Ej: 34922..."
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-medium font-mono"
+                      />
+                      {formTicketId && (
+                        <div className="text-[9px] text-slate-500 bg-slate-50 border border-slate-100 p-1.5 rounded-lg mt-1 max-h-12 overflow-y-auto leading-snug absolute z-10 w-full shadow-sm">
+                          {crmTicketsList.find(t => t.id.toString() === formTicketId.trim()) ? (
+                            <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                              <span>✓ Ticket:</span> 
+                              <span className="truncate max-w-[200px] inline-block align-bottom">{crmTicketsList.find(t => t.id.toString() === formTicketId.trim())?.subject}</span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">ID manual</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Technical Staff & Priority */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Responsable *</label>
+                      <select
+                        required
+                        value={formAssignedToId}
+                        onChange={(e) => setFormAssignedToId(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="">Selecciona Responsable</option>
+                        {agents.map(a => (
+                          <option key={a.id} value={a.id}>{a.name} ({a.username})</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Prioridad *</label>
+                      <select
+                        value={formPriority}
+                        onChange={(e) => setFormPriority(e.target.value as any)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Category & Effort */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Categoría *</label>
+                      <select
+                        value={formCategory}
+                        onChange={(e) => setFormCategory(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="Soporte">Soporte Técnico</option>
+                        <option value="Mantenimiento">Mantenimiento Preventivo</option>
+                        <option value="Backup">Respaldo / Backup</option>
+                        <option value="Instalación">Instalación / Configuración</option>
+                        <option value="Monitoreo">Monitoreo / Guardia</option>
+                        <option value="Auditoría">Auditoría / Control</option>
+                        <option value="Capacitación">Capacitación / Inducción</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Esfuerzo *</label>
+                      <select
+                        value={formEffortEstimate}
+                        onChange={(e) => setFormEffortEstimate(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 font-bold"
+                      >
+                        <option value="Muy rápido (< 15m)">Muy rápido (&lt; 15m)</option>
+                        <option value="Rápido (15m - 1h)">Rápido (15m - 1h)</option>
+                        <option value="Medio (1h - 4h)">Medio (1h - 4h)</option>
+                        <option value="Extenso (4h - 1d)">Extenso (4h - 1d)</option>
+                        <option value="Complejo (Varios días)">Complejo (Varios días)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Instrucciones</label>
+                    <textarea
+                      value={formNotes}
+                      onChange={(e) => setFormNotes(e.target.value)}
+                      placeholder="Detalles técnicos, comandos a ejecutar..."
+                      rows={2}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-slate-700 font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    {/* SCOPE SELECTION */}
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Alcance *</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormScope('Cliente')}
+                          className={`flex-1 py-1.5 px-2 rounded-lg border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                            formScope === 'Cliente'
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm'
+                              : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <User className="w-3.5 h-3.5" />
+                          Cliente
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormScope('Interna')}
+                          className={`flex-1 py-1.5 px-2 rounded-lg border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                            formScope === 'Interna'
+                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm'
+                              : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                          }`}
+                        >
+                          <Building className="w-3.5 h-3.5" />
+                          Interna
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* BITACORA SELECTION */}
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200/60 p-2 rounded-lg hover:bg-slate-100/50 transition-colors h-[34px]">
+                      <input
+                        type="checkbox"
+                        checked={formShowInBitacora}
+                        onChange={(e) => setFormShowInBitacora(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-[11px] font-bold text-slate-800 block truncate">Mostrar en Bitácora</span>
+                    </label>
+                  </div>
+
+                  {/* CLIENT & METADATA SECTION */}
+                  {formScope === 'Cliente' && (
+                  <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-200/60 space-y-3.5 animate-fadeIn">
+                    <span className="text-[10px] font-mono font-black text-indigo-950 uppercase tracking-widest block flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-indigo-600" />
+                      Metadatos del Cliente y Versión (Opcional)
+                    </span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 uppercase font-bold block">Nombre del Cliente</label>
+                        <input
+                          type="text"
+                          value={formClientName}
+                          onChange={(e) => setFormClientName(e.target.value)}
+                          placeholder="Ej: Sarah Jenkins, Inmobiliaria Norte"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-indigo-500 text-slate-800 font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 uppercase font-bold block">Cargo / Rol del Cliente</label>
+                        <input
+                          type="text"
+                          value={formClientRole}
+                          onChange={(e) => setFormClientRole(e.target.value)}
+                          placeholder="Ej: Gerente de TI"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-indigo-500 text-slate-800 font-medium"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 uppercase font-bold block">Versión / Sprint Objetivo</label>
+                        <input
+                          type="text"
+                          value={formVersion}
+                          onChange={(e) => setFormVersion(e.target.value)}
+                          placeholder="Ej: v1.4.0, Sprint 4"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-indigo-500 text-slate-800 font-medium font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-slate-500 uppercase font-bold block">Rol Técnico Requerido</label>
+                        <select
+                          value={formAssignedRole}
+                          onChange={(e) => setFormAssignedRole(e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-1 focus:ring-indigo-500 text-slate-800 font-bold"
+                        >
+                          <option value="">Cualquier Rol</option>
+                          <option value="Soporte N1">Soporte N1</option>
+                          <option value="Soporte N2">Soporte N2</option>
+                          <option value="Ingeniero DevOps">Ingeniero DevOps</option>
+                          <option value="Administrador de Sistemas">Administrador de Sistemas</option>
+                          <option value="Supervisor de Operaciones">Supervisor de Operaciones</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                </div>
+
+                {/* Right Column (Span 5): Advanced Scheduling */}
+                <div className="lg:col-span-5 space-y-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-200/50 flex flex-col justify-between">
+                  
+                  <div className="space-y-4">
+                    {/* Section Header */}
+                    <h4 className="text-[10px] font-mono font-black text-indigo-950 uppercase tracking-widest flex items-center gap-1.5 border-b border-indigo-100/60 pb-2">
+                      <Calendar className="w-4 h-4 text-indigo-600" />
+                      Planificación Temporal
+                    </h4>
+
+                    {/* Requirements Type Selection Grid */}
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">Tipo de Requerimiento *</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { value: 'Interna', icon: Pin, label: 'Puntual', desc: 'Única' },
+                          { value: 'Programada', icon: Calendar, label: 'Progr.', desc: 'Varias' },
+                          { value: 'Recurrente', icon: RefreshCw, label: 'Recurr.', desc: 'Fija' }
+                        ].map(opt => {
+                          const IconComp = opt.icon;
+                          const isSelected = formType === opt.value;
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                setFormType(opt.value as any);
+                                if (opt.value !== 'Recurrente') setFormFrequency('Única');
+                              }}
+                              className={`p-1.5 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
+                                isSelected
+                                   ? 'border-indigo-600 bg-white ring-1 ring-indigo-500/20 shadow-xs'
+                                   : 'border-slate-200 bg-white/50 hover:bg-slate-100'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1">
+                                <IconComp className={`w-3.5 h-3.5 ${isSelected ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                <span className="text-[10px] font-extrabold text-slate-800">{opt.label}</span>
+                              </div>
+                              <span className="block text-[8px] text-slate-400 font-medium leading-tight">{opt.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Conditional Configuration Cards */}
+                    
+                    {/* PUNTUAL (Interna) */}
+                    {formType === 'Interna' && (
+                      <div className="space-y-3 bg-white p-3 rounded-xl border border-slate-200/60 animate-fadeIn">
+                        <span className="text-[9px] font-mono font-extrabold text-indigo-950 uppercase tracking-wider block">Parámetros Puntuales</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-400 uppercase font-bold">Fecha</label>
+                            <input
+                              type="date"
+                              required
+                              value={formScheduledDate}
+                              onChange={(e) => setFormScheduledDate(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-400 uppercase font-bold">Hora</label>
+                            <input
+                              type="time"
+                              required
+                              value={formScheduledTime}
+                              onChange={(e) => setFormScheduledTime(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}            </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3 bg-white p-3.5 rounded-xl border border-slate-200/60 animate-fadeIn">
+                        <span className="text-[10px] font-mono font-extrabold text-indigo-950 uppercase tracking-wider block">Fechas Programadas</span>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-400 uppercase font-bold">Fecha Principal *</label>
+                            <input
+                              type="date"
+                              required
+                              value={formScheduledDate}
+                              onChange={(e) => setFormScheduledDate(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-400 uppercase font-bold">Hora de inicio *</label>
+                            <input
+                              type="time"
+                              required
+                              value={formScheduledTime}
+                              onChange={(e) => setFormScheduledTime(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* End Date Limit Switch */}
+                        <div className="pt-2 border-t border-slate-100 space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formHasEndDate}
+                              onChange={(e) => setFormHasEndDate(e.target.checked)}
+                              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                            />
+                            <span className="text-[10px] text-slate-600 font-bold">¿Tiene fecha de vencimiento/fin?</span>
+                          </label>
+                          {formHasEndDate && (
+                            <input
+                              type="date"
+                              required
+                              value={formRecurrenceEndDate}
+                              onChange={(e) => setFormRecurrenceEndDate(e.target.value)}
+                              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono animate-fadeIn"
+                            />
+                          )}
+                        </div>
+
+                        {/* Additional Dates of Interest */}
+                        <div className="pt-2 border-t border-slate-100 space-y-2">
+                          <label className="text-[9px] text-slate-500 uppercase tracking-wider font-extrabold block">Fechas de interés adicionales</label>
+                          
+                          <div className="flex gap-1.5">
+                            <input
+                              type="date"
+                              value={newSecondaryDate}
+                              onChange={(e) => setNewSecondaryDate(e.target.value)}
+                              className="flex-1 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleAddSecondaryDate}
+                              className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* List of secondary dates */}
+                          {formSecondaryDates.length > 0 && (
+                            <div className="space-y-1 max-h-24 overflow-y-auto pt-1">
+                              {formSecondaryDates.map(dateStr => (
+                                <div key={dateStr} className="flex justify-between items-center bg-slate-50 px-2 py-1 rounded text-[10px] border border-slate-100 font-mono text-slate-700">
+                                  <span className="flex items-center gap-1.5">
+                                    <Calendar className="w-3 h-3 text-slate-400" />
+                                    {dateStr}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveSecondaryDate(dateStr)}
+                                    className="text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* RECURRENTE (With recurrence settings) */}
+                    {formType === 'Recurrente' && (
+                      <div className="space-y-3 bg-white p-3.5 rounded-xl border border-slate-200/60 animate-fadeIn">
+                        <span className="text-[10px] font-mono font-extrabold text-indigo-950 uppercase tracking-wider block">Frecuencia Recurrente</span>
+                        
+                        {/* Selector Frecuencia */}
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {[
+                            { value: 'Diario', label: 'Diario' },
+                            { value: 'Semanal', label: 'Semanal' },
+                            { value: 'Mensual', label: 'Mensual' },
+                            { value: 'Anual', label: 'Anual' }
+                          ].map(freq => (
+                            <button
+                              key={freq.value}
+                              type="button"
+                              onClick={() => setFormFrequency(freq.value as any)}
+                              className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition-all cursor-pointer ${
+                                formFrequency === freq.value 
+                                  ? 'bg-indigo-600 text-white border-indigo-600' 
+                                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                              }`}
+                            >
+                              {freq.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Recurrence Days for Semanal */}
+                        {formFrequency === 'Semanal' && (
+                          <div className="space-y-1 animate-fadeIn pt-1.5 border-t border-slate-100">
+                            <label className="text-[9px] text-slate-400 uppercase font-black block">Días de Ejecución *</label>
+                            <div className="flex gap-1">
+                              {[
+                                { key: 'Lunes', label: 'Lun' },
+                                { key: 'Martes', label: 'Mar' },
+                                { key: 'Miercoles', label: 'Mie' },
+                                { key: 'Jueves', label: 'Jue' },
+                                { key: 'Viernes', label: 'Vie' },
+                                { key: 'Sabado', label: 'Sab' },
+                                { key: 'Domingo', label: 'Dom' }
+                              ].map(day => {
+                                const isSelected = formRecurrenceDays.includes(day.key);
+                                return (
+                                  <button
+                                    key={day.key}
+                                    type="button"
+                                    onClick={() => handleToggleRecurrenceDay(day.key)}
+                                    className={`flex-1 py-1 rounded text-[9px] font-bold text-center border transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-indigo-600 text-white border-indigo-600'
+                                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    {day.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-slate-100">
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-400 uppercase font-bold">Comienza el</label>
+                            <input
+                              type="date"
+                              required
+                              value={formScheduledDate}
+                              onChange={(e) => setFormScheduledDate(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-slate-400 uppercase font-bold">Hora de Ejecución</label>
+                            <input
+                              type="time"
+                              required
+                              value={formScheduledTime}
+                              onChange={(e) => setFormScheduledTime(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Recurrence End Date */}
+                        <div className="pt-2 border-t border-slate-100 space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formHasEndDate}
+                              onChange={(e) => setFormHasEndDate(e.target.checked)}
+                              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                            />
+                            <span className="text-[10px] text-slate-600 font-bold">¿Tiene fecha de finalización?</span>
+                          </label>
+                          {formHasEndDate && (
+                            <input
+                              type="date"
+                              required
+                              value={formRecurrenceEndDate}
+                              onChange={(e) => setFormRecurrenceEndDate(e.target.value)}
+                              className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold font-mono animate-fadeIn"
+                            />
+                          )}
+                        </div>
+
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Save/Close Button Footer of Column */}
+                  <div className="pt-4 border-t border-slate-200/60 flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-4 py-2 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition-colors shadow-md hover:shadow-indigo-500/20 cursor-pointer"
+                    >
+                      {editingTask ? 'Guardar Cambios' : 'Programar Tarea'}
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+              
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DETAILED VIEW POPUP MODAL */}
+      {activeTaskDetailId && (() => {
+        const activeTask = tasks.find(t => t.id === activeTaskDetailId);
+        if (!activeTask) return null;
+
