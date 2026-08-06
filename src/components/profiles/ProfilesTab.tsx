@@ -10,6 +10,7 @@ import {
   fetchWeeklyBacklog,
   fetchHistoricalBacklog,
   fetchAvailableSprints,
+  sortSprintsDescending,
   fetchSystemSettings,
   checkSprintMatch,
   isDateInActiveWeek,
@@ -1032,7 +1033,7 @@ export default function ProfilesTab({
       }
     });
 
-    return Array.from(sprintSet).filter(Boolean);
+    return sortSprintsDescending(Array.from(sprintSet).filter(Boolean));
   }, [availableSprints, activeSystemSprint, historicalRows, agentOpsItems]);
 
   // Filtered operational items

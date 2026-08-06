@@ -855,6 +855,29 @@ export const checkSprintMatch = (ticket: any, sprintFilter: string): boolean => 
 };
 
 
+export function parseSprintStartDate(sprintStr: string): Date | null {
+  if (!sprintStr) return null;
+  const match = sprintStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (match) {
+    const [, d, m, y] = match;
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+  return null;
+}
+
+export function sortSprintsDescending(sprints: string[]): string[] {
+  return [...sprints].sort((a, b) => {
+    const dateA = parseSprintStartDate(a);
+    const dateB = parseSprintStartDate(b);
+    if (dateA && dateB) {
+      return dateB.getTime() - dateA.getTime();
+    }
+    if (dateA) return -1;
+    if (dateB) return 1;
+    return b.localeCompare(a);
+  });
+}
+
 export async function fetchAvailableSprints(): Promise<string[]> {
   try {
     const sprints = new Set<string>();
@@ -889,7 +912,7 @@ export async function fetchAvailableSprints(): Promise<string[]> {
       if (activeWeek) sprints.add(activeWeek);
     }
 
-    return Array.from(sprints).sort((a, b) => b.localeCompare(a)); // Descending roughly
+    return sortSprintsDescending(Array.from(sprints));
   } catch (err) {
     console.error('Error fetching available sprints:', err);
     return [];
