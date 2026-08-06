@@ -237,10 +237,21 @@ export const OperationsAusenciasTab = () => {
                     className="w-full text-xs font-semibold p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 outline-none"
                   >
                     <option value="Vacaciones">Vacaciones</option>
-                    <option value="Permiso">Permiso Personal</option>
-                    <option value="Licencia">Licencia Médica</option>
+                    <option value="Permiso Personal">Permiso Personal</option>
+                    <option value="Licencia Médica">Licencia Médica</option>
                     <option value="Ausencia Programada">Ausencia Programada</option>
                     <option value="Trabajo Remoto">Trabajo Remoto</option>
+                    <option value="Cita Médica">Cita / Consulta Médica</option>
+                    <option value="Capacitación / Formación">Capacitación / Formación</option>
+                    <option value="Trabajo en Terreno / Comisión">Trabajo en Terreno / Comisión</option>
+                    <option value="Permiso Maternidad / Paternidad">Permiso Maternidad / Paternidad</option>
+                    <option value="Permiso por Duelo / Luto">Permiso por Duelo / Luto</option>
+                    <option value="Día Administrativo">Día Administrativo</option>
+                    <option value="Permiso de Estudios / Examen">Permiso de Estudios / Examen</option>
+                    <option value="Causa Mayor / Emergencia">Causa Mayor / Emergencia Familiar</option>
+                    <option value="Calamidad Doméstica">Calamidad Doméstica</option>
+                    <option value="Inasistencia Injustificada">Inasistencia Injustificada</option>
+                    <option value="Otro Permiso">Otro Permiso</option>
                   </select>
                 </div>
 
@@ -411,8 +422,19 @@ export const OperationsAusenciasTab = () => {
                   const isApproved = true; // Assuming all absences are approved
                   
                   let badgeColor = 'bg-blue-50 text-blue-700 border-blue-100';
-                  if (abs.type === 'Vacaciones') badgeColor = 'bg-teal-50 text-teal-700 border-teal-100';
-                  else if (abs.type === 'Trabajo Remoto') badgeColor = 'bg-violet-50 text-violet-700 border-violet-100';
+                  const t = abs.type || '';
+                  if (t === 'Vacaciones') badgeColor = 'bg-teal-50 text-teal-700 border-teal-200';
+                  else if (t === 'Trabajo Remoto') badgeColor = 'bg-violet-50 text-violet-700 border-violet-200';
+                  else if (t.includes('Licencia')) badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
+                  else if (t.includes('Permiso')) badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                  else if (t.includes('Cita')) badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                  else if (t.includes('Capacit') || t.includes('Estudio')) badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                  else if (t.includes('Terreno')) badgeColor = 'bg-cyan-50 text-cyan-700 border-cyan-200';
+                  else if (t.includes('Maternidad') || t.includes('Paternidad')) badgeColor = 'bg-pink-50 text-pink-700 border-pink-200';
+                  else if (t.includes('Duelo') || t.includes('Luto')) badgeColor = 'bg-slate-100 text-slate-700 border-slate-300';
+                  else if (t.includes('Administrativo')) badgeColor = 'bg-sky-50 text-sky-700 border-sky-200';
+                  else if (t.includes('Emergencia') || t.includes('Calamidad')) badgeColor = 'bg-orange-50 text-orange-700 border-orange-200';
+                  else if (t.includes('Inasistencia')) badgeColor = 'bg-red-100 text-red-800 border-red-300';
 
                   const isSameDayAbs = abs.startDate === abs.endDate;
 

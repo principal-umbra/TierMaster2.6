@@ -43,10 +43,29 @@ export interface SpecialDutyAssignment {
   assignedDate: string; // YYYY-MM-DD
 }
 
+export type AbsenceType =
+  | 'Vacaciones'
+  | 'Permiso Personal'
+  | 'Licencia Médica'
+  | 'Ausencia Programada'
+  | 'Trabajo Remoto'
+  | 'Cita Médica'
+  | 'Capacitación / Formación'
+  | 'Trabajo en Terreno / Comisión'
+  | 'Permiso Maternidad / Paternidad'
+  | 'Permiso por Duelo / Luto'
+  | 'Día Administrativo'
+  | 'Permiso de Estudios / Examen'
+  | 'Causa Mayor / Emergencia'
+  | 'Calamidad Doméstica'
+  | 'Inasistencia Injustificada'
+  | 'Otro Permiso'
+  | string;
+
 export interface AbsenceRecord {
   id: string;
   agentId: string;
-  type: 'Vacaciones' | 'Permiso' | 'Licencia' | 'Ausencia Programada' | 'Trabajo Remoto';
+  type: AbsenceType;
   startDate: string;
   endDate: string;
   reason: string;
@@ -59,7 +78,7 @@ export interface AbsenceRecord {
 export interface AbsenceRequest {
   id: string;
   agentId: string;
-  type: 'Vacaciones' | 'Permiso' | 'Licencia' | 'Ausencia Programada' | 'Trabajo Remoto';
+  type: AbsenceType;
   startDate: string;
   endDate: string;
   reason: string;

@@ -892,10 +892,19 @@ export const OperationsAdminTab = () => {
                   const agentName = agents.find(a => a.id === req.agentId)?.name || 'Técnico';
                   
                   let badgeColor = 'bg-blue-50 text-blue-700 border-blue-100';
-                  if (req.type === 'Vacaciones') badgeColor = 'bg-teal-50 text-teal-700 border-teal-100';
-                  else if (req.type === 'Trabajo Remoto') badgeColor = 'bg-violet-50 text-violet-700 border-violet-100';
-                  else if (req.type === 'Licencia') badgeColor = 'bg-rose-50 text-rose-700 border-rose-100';
-                  else if (req.type === 'Permiso') badgeColor = 'bg-amber-50 text-amber-700 border-amber-100';
+                  const t = req.type || '';
+                  if (t === 'Vacaciones') badgeColor = 'bg-teal-50 text-teal-700 border-teal-200';
+                  else if (t === 'Trabajo Remoto') badgeColor = 'bg-violet-50 text-violet-700 border-violet-200';
+                  else if (t.includes('Licencia')) badgeColor = 'bg-rose-50 text-rose-700 border-rose-200';
+                  else if (t.includes('Permiso')) badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                  else if (t.includes('Cita')) badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                  else if (t.includes('Capacit') || t.includes('Estudio')) badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                  else if (t.includes('Terreno')) badgeColor = 'bg-cyan-50 text-cyan-700 border-cyan-200';
+                  else if (t.includes('Maternidad') || t.includes('Paternidad')) badgeColor = 'bg-pink-50 text-pink-700 border-pink-200';
+                  else if (t.includes('Duelo') || t.includes('Luto')) badgeColor = 'bg-slate-100 text-slate-700 border-slate-300';
+                  else if (t.includes('Administrativo')) badgeColor = 'bg-sky-50 text-sky-700 border-sky-200';
+                  else if (t.includes('Emergencia') || t.includes('Calamidad')) badgeColor = 'bg-orange-50 text-orange-700 border-orange-200';
+                  else if (t.includes('Inasistencia')) badgeColor = 'bg-red-100 text-red-800 border-red-300';
 
                   return (
                     <div key={req.id} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 flex flex-col justify-between space-y-3 hover:border-slate-300 transition-all">
