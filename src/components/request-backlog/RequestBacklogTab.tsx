@@ -613,8 +613,188 @@ export default function RequestBacklogTab({
 
   const [focusedMergeIndex, setFocusedMergeIndex] = useState<number | null>(null);
 
+  // Auto Background Sync States
+  const [autoSyncInterval, setAutoSyncInterval] = useState<string>(() => {
+    return localStorage.getItem('manageengine_auto_sync_interval') || '5'; // default 5 minutes
+  });
+  const [lastAutoSyncTime, setLastAutoSyncTime] = useState<Date | null>(null);
+  const [nextAutoSyncTime, setNextAutoSyncTime] = useState<Date | null>(null);
+  const [isAutoSyncing, setIsAutoSyncing] = useState<boolean>(false);
+
+  const handleAutoSyncChange = (val: string) => {
+    setAutoSyncInterval(val);
+    localStorage.setItem('manageengine_auto_sync_interval', val);
+  };
+
   // File Upload Ref
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDirectManageEngineSync = async () => {
+    if (isWeekExpired) {
+      setLoadStatus('error');
+      setLoadMessage('La semana actual de trabajo ha expirado. Debe actualizar el rango de la semana en curso antes de realizar la sincronización.');
+      return;
+    }
+
+    setLoadStatus('loading');
+    setLoadMessage('Consultando SupportCenter Plus en tiempo real...');
+    setPendingUploadData(null);
+
+    try {
+      // 1. Fetch open and completed tickets in parallel from SupportCenter Plus API
+      const [openRes, completedRes] = await Promise.all([
+        fetch('/api/manageengine/fetch-tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statusFilter: 'open', rowCount: 500, viewId: '637' })
+        }),
+        fetch('/api/manageengine/fetch-tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statusFilter: 'completed', rowCount: 500 })
+        })
+      ]);
+
+      const openText = await openRes.text();
+      const completedText = await completedRes.text();
+
+      let openJson: any = null;
+      let completedJson: any = null;
+
+      try {
+        openJson = JSON.parse(openText);
+      } catch {
+        throw new Error(`Respuesta no válida del servidor backend al consultar tickets abiertos (${openRes.status}). ${openText.slice(0, 120)}`);
+      }
+
+      try {
+        completedJson = JSON.parse(completedText);
+      } catch {
+        throw new Error(`Respuesta no válida del servidor backend al consultar tickets completados (${completedRes.status}). ${completedText.slice(0, 120)}`);
+      }
+
+      if (!openRes.ok || !openJson.success) {
+        throw new Error(openJson?.error || openJson?.details || `No se pudieron obtener los tickets activos desde SupportCenter Plus (${openRes.status}).`);
+      }
+
+      const activeWeek = currentWeekRange || '';
+      const rawOpenRows = openJson.tickets || [];
+      const rawCompletedRows = completedJson.tickets || [];
+
+      // Standardize CRM data
+      const enCursoRows = standardizeCRMData({ headers: STANDARD_HEADERS_ORDER, rows: rawOpenRows }).rows;
+      const doneRows = standardizeCRMData({ headers: STANDARD_HEADERS_ORDER, rows: rawCompletedRows }).rows;
+
+      // Existing sets in Firestore
+      let freshHist: CRMData = { headers: [], rows: [] };
+      try { freshHist = await fetchAsCRMData('historico_completados'); } catch (err) {}
+      const standardHistorical = standardizeCRMData(freshHist);
+      const historicalIdsSet = new Set(standardHistorical.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()).filter(Boolean));
+
+      let freshDone: CRMData = { headers: [], rows: [] };
+      try { freshDone = await fetchAsCRMData('backlog_semanal'); } catch (err) {}
+      const standardDone = standardizeCRMData(freshDone);
+      const doneIdsSet = new Set(standardDone.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()).filter(Boolean));
+
+      let freshEnCurso: CRMData = { headers: [], rows: [] };
+      try { freshEnCurso = await fetchAsCRMData('requerimientos_en_curso'); } catch (e) {}
+      const standardCurrentEnCurso = standardizeCRMData(freshEnCurso);
+
+      const allKnownRequestsMap = new Map<string, { title: string, status: string, agent: string }>();
+      [...standardCurrentEnCurso.rows, ...standardDone.rows, ...standardHistorical.rows].forEach(r => {
+        const idVal = String(r.ID || r.id || '').trim().toUpperCase();
+        if (idVal) {
+          allKnownRequestsMap.set(idVal, {
+            title: r['Título'] || r.Title || r.Subject || r.title || 'S/N',
+            status: r.Estado || r.Status || 'S/E',
+            agent: r['Técnico Asignado'] || r['Assigned To'] || r.agent || 'N/A'
+          });
+        }
+      });
+      const allKnownRequests = Array.from(allKnownRequestsMap.entries()).map(([id, data]) => ({ id, ...data }));
+
+      const discrepancies: Record<string, string>[] = [];
+      const newDoneRows: Record<string, string>[] = [];
+
+      doneRows.forEach(row => {
+        const idVal = String(row.ID || row.id || '').trim();
+        const idValUpper = idVal.toUpperCase();
+        if (!idVal) return;
+
+        const resolvedDateVal = String(row['Resolved Date'] || row['Fecha completado'] || row['Created Date'] || '').trim();
+        const inRange = isDateInActiveWeekRange(resolvedDateVal, activeWeek);
+
+        if (!inRange && resolvedDateVal) {
+          // Si fue completado fuera del rango de la semana en curso (sprint activo),
+          // pertenece a un sprint anterior y simplemente se omite (no es una discrepancia).
+          return;
+        }
+
+        const isInEnCurso = enCursoRows.some(er => String(er.ID || er.id || '').trim().toUpperCase() === idValUpper);
+        const isAlreadyInNewDone = newDoneRows.some(dr => String(dr.ID || dr.id || '').trim().toUpperCase() === idValUpper);
+
+        let shouldImport = false;
+        if (!isInEnCurso && !isAlreadyInNewDone) {
+          if (!doneIdsSet.has(idValUpper)) {
+            if (!historicalIdsSet.has(idValUpper)) {
+              shouldImport = true;
+            } else {
+              const existingHist = standardHistorical.rows.find(hr => String(hr.ID || hr.id || '').trim().toUpperCase() === idValUpper);
+              const existingHistSprint = existingHist ? String(existingHist.sprint_trabajo || '').trim() : '';
+              const existingHistResolvedDate = existingHist ? String(existingHist['Resolved Date'] || '').trim() : '';
+              if (existingHistSprint !== activeWeek || existingHistResolvedDate !== resolvedDateVal) {
+                shouldImport = true;
+              }
+            }
+          }
+        }
+
+        if (shouldImport) {
+          const newRow = { ...row };
+          newRow['Estado Registro'] = 'PENDIENTE A CONFIRMAR';
+          newRow['sprint_trabajo'] = activeWeek;
+          newDoneRows.push(newRow);
+        }
+      });
+
+      // Historical conflicts
+      const historicalConflicts: Record<string, string>[] = [];
+      enCursoRows.forEach(r => {
+        const idVal = String(r.ID || r.id || '').trim().toUpperCase();
+        if (!idVal) return;
+        if (historicalIdsSet.has(idVal)) {
+          historicalConflicts.push(r);
+          discrepancies.push({
+            ID: idVal,
+            Title: r['Título'] || r.Subject || r.title || 'S/N',
+            AssignedTo: r['Técnico Asignado'] || r['Assigned To'] || r.agent || 'N/A',
+            Status: 'Archivado en Historial por Error (Discrepancia de Historial)'
+          });
+        }
+      });
+
+      let summaryMsg = `Conexión Directa API: Se obtuvieron ${enCursoRows.length} requerimientos activos en curso y ${newDoneRows.length} completados desde SupportCenter Plus.`;
+      if (historicalConflicts.length > 0) {
+        summaryMsg += ` Se detectaron ${historicalConflicts.length} requerimientos activos que estaban archivados por error.`;
+      }
+
+      setPendingUploadData({
+        discrepancies,
+        enCursoRows,
+        newDoneRows,
+        allKnownRequests,
+        fileName: 'ManageEngine SupportCenter Plus (Conexión Directa)',
+        msg: summaryMsg
+      });
+
+      setLoadStatus('idle');
+      setLoadMessage('');
+    } catch (err: any) {
+      console.error(err);
+      setLoadStatus('error');
+      setLoadMessage(`Error en sincronización directa con SupportCenter Plus: ${err.message}`);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -721,13 +901,9 @@ export default function RequestBacklogTab({
               const inRange = isDateInActiveWeekRange(resolvedDateVal, activeWeek);
 
               if (!inRange) {
-                discrepancies.push({
-                  ID: idValUpper,
-                  Title: row['Título'] || row.Subject || row.title || 'S/N',
-                  AssignedTo: row['Técnico Asignado'] || row['Assigned To'] || row.agent || 'N/A',
-                  Status: `Fecha completado (${resolvedDateVal || 'Sin Fecha'}) fuera de la semana en curso (${activeWeek})`
-                });
-                return; // Do not add to the current week's new done items
+                // Si fue completado fuera de la semana activa, pertenece a otro sprint
+                // y se omite (no se marca como discrepancia ni se agrega al sprint activo).
+                return;
               }
               
               const isInEnCurso = enCursoRows.some(er => String(er.ID || er.id || '').trim().toUpperCase() === idValUpper);
@@ -1247,6 +1423,208 @@ export default function RequestBacklogTab({
       return false;
     }
   }, [currentWeekRange]);
+
+  // Silent Background Auto-Sync Handler
+  const handleSilentBackgroundSync = useCallback(async () => {
+    if (isWeekExpired || isAutoSyncing || pendingUploadData) return;
+
+    // Regla de horario: Solo ejecutar entre las 8:00 AM (08:00) y las 8:00 PM (20:00)
+    const currentHour = new Date().getHours();
+    if (currentHour < 8 || currentHour >= 20) {
+      return;
+    }
+
+    setIsAutoSyncing(true);
+    try {
+      const [openRes, completedRes] = await Promise.all([
+        fetch('/api/manageengine/fetch-tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statusFilter: 'open', rowCount: 500, viewId: '637' })
+        }),
+        fetch('/api/manageengine/fetch-tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statusFilter: 'completed', rowCount: 500 })
+        })
+      ]);
+
+      const openJson = await openRes.json();
+      const completedJson = await completedRes.json();
+
+      if (openRes.ok && openJson.success) {
+        const activeWeek = currentWeekRange || '';
+        const rawOpenRows = openJson.tickets || [];
+        const rawCompletedRows = completedJson.tickets || [];
+
+        // Update active requirements (en curso)
+        const currentEnCurso = await fetchAsCRMData('requerimientos_en_curso');
+        const newEnCursoIds = new Set(rawOpenRows.map((r: any) => String(r.ID || r.id || '').trim().toUpperCase()));
+        
+        const docsToDelete = currentEnCurso.rows.filter(r => {
+          const idVal = String(r.ID || r.id || '').trim().toUpperCase();
+          return idVal && !newEnCursoIds.has(idVal);
+        });
+
+        for (const doc of docsToDelete) {
+          const idVal = String(doc.ID || doc.id || '').trim();
+          await deleteCRMItem('requerimientos_en_curso', idVal);
+        }
+
+        if (rawOpenRows.length > 0) {
+          await saveCRMData('requerimientos_en_curso', rawOpenRows);
+        }
+
+        // Process completed tickets in current active week
+        const newDoneRows: Record<string, string>[] = [];
+        rawCompletedRows.forEach((row: any) => {
+          const resolvedDateVal = String(row['Resolved Date'] || '').trim();
+          const inRange = isDateInActiveWeekRange(resolvedDateVal, activeWeek);
+          if (inRange) {
+            newDoneRows.push(row);
+          }
+        });
+
+        if (newDoneRows.length > 0) {
+          let freshDone: CRMData = { headers: [], rows: [] };
+          try { freshDone = await fetchAsCRMData('backlog_semanal'); } catch (err) {}
+          const standardDone = standardizeCRMData(freshDone);
+          const existingIds = new Set(standardDone.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()));
+
+          const brandNewDone = newDoneRows.filter(r => {
+            const idVal = String(r.ID || r.id || '').trim().toUpperCase();
+            return idVal && !existingIds.has(idVal);
+          });
+
+          if (brandNewDone.length > 0) {
+            await saveCRMData('backlog_semanal', [...standardDone.rows, ...brandNewDone]);
+          }
+        }
+
+        await separateContractorBacklog();
+        await handleFetch();
+        await handleFetchLog();
+        await handleFetchDoneInProgress();
+        setLastAutoSyncTime(new Date());
+      }
+    } catch (err) {
+      console.error('Error en auto-sincronización en segundo plano:', err);
+    } finally {
+      setIsAutoSyncing(false);
+    }
+  }, [isWeekExpired, isAutoSyncing, pendingUploadData, currentWeekRange]);
+
+  // Track last executed slot timestamp and current target slot ref to prevent missed or duplicate triggers
+  const lastExecutedSlotRef = useRef<number | null>(null);
+  const targetSyncSlotRef = useRef<Date | null>(null);
+
+  // Helper to calculate next grid slot anchored at 8:00 AM within 8:00 AM - 8:00 PM window
+  const getNextAutoSyncSlot = useCallback((minutes: number, now: Date = new Date()): Date | null => {
+    if (minutes <= 0) return null;
+
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate();
+
+    const startToday = new Date(year, month, date, 8, 0, 0, 0);
+    const endToday = new Date(year, month, date, 20, 0, 0, 0);
+
+    if (now.getTime() < startToday.getTime()) {
+      return startToday;
+    }
+
+    if (now.getTime() >= endToday.getTime()) {
+      return new Date(year, month, date + 1, 8, 0, 0, 0);
+    }
+
+    const elapsedMs = now.getTime() - startToday.getTime();
+    const intervalMs = minutes * 60 * 1000;
+
+    const slotIndex = Math.floor(elapsedMs / intervalMs);
+    let targetMs = startToday.getTime() + slotIndex * intervalMs;
+
+    // If targetMs is in the past by more than 1 second, advance to the next interval slot
+    if (targetMs < now.getTime() - 1000) {
+      targetMs += intervalMs;
+    }
+
+    if (targetMs > endToday.getTime()) {
+      return new Date(year, month, date + 1, 8, 0, 0, 0);
+    }
+
+    return new Date(targetMs);
+  }, []);
+
+  // Ref to always hold the latest handleSilentBackgroundSync function reference
+  const silentSyncRef = useRef(handleSilentBackgroundSync);
+  useEffect(() => {
+    silentSyncRef.current = handleSilentBackgroundSync;
+  }, [handleSilentBackgroundSync]);
+
+  // Recalculate nextAutoSyncTime and update targetSyncSlotRef when interval setting changes
+  useEffect(() => {
+    if (autoSyncInterval === 'off') {
+      setNextAutoSyncTime(null);
+      targetSyncSlotRef.current = null;
+      return;
+    }
+    const mins = parseInt(autoSyncInterval, 10);
+    if (!isNaN(mins) && mins > 0) {
+      const slot = getNextAutoSyncSlot(mins, new Date());
+      setNextAutoSyncTime(slot);
+      targetSyncSlotRef.current = slot;
+    }
+  }, [autoSyncInterval, getNextAutoSyncSlot]);
+
+  // Background Auto-Sync Scheduler Loop (checks every 1 second)
+  useEffect(() => {
+    if (autoSyncInterval === 'off') return;
+    const mins = parseInt(autoSyncInterval, 10);
+    if (isNaN(mins) || mins <= 0) return;
+
+    const timer = setInterval(() => {
+      const now = new Date();
+      let target = targetSyncSlotRef.current;
+
+      if (!target) {
+        target = getNextAutoSyncSlot(mins, now);
+        targetSyncSlotRef.current = target;
+        if (target) setNextAutoSyncTime(target);
+      }
+
+      if (!target) return;
+
+      const targetMs = target.getTime();
+      const nowMs = now.getTime();
+
+      // Outside operating hours: strictly 8:00 AM (08:00) to 8:00 PM (20:00)
+      const currentHour = now.getHours();
+      if (currentHour < 8 || currentHour >= 20) {
+        const nextSlot = getNextAutoSyncSlot(mins, now);
+        targetSyncSlotRef.current = nextSlot;
+        setNextAutoSyncTime(nextSlot);
+        return;
+      }
+
+      // Check if current time has reached or passed the target slot
+      if (nowMs >= targetMs) {
+        if (lastExecutedSlotRef.current !== targetMs && !isAutoSyncing) {
+          lastExecutedSlotRef.current = targetMs;
+          silentSyncRef.current().finally(() => {
+            const freshNext = getNextAutoSyncSlot(mins, new Date());
+            targetSyncSlotRef.current = freshNext;
+            setNextAutoSyncTime(freshNext);
+          });
+        }
+      } else {
+        if (nextAutoSyncTime?.getTime() !== targetMs) {
+          setNextAutoSyncTime(target);
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [autoSyncInterval, isAutoSyncing, getNextAutoSyncSlot, nextAutoSyncTime]);
 
   const showWeekModalState = useState(false); // Let's keep showWeekModal as is below
   const [pendingAction, setPendingAction] = useState<'reset' | 'start' | 'confirm' | 'separate' | null>(null);
@@ -3282,18 +3660,16 @@ export default function RequestBacklogTab({
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-emerald-500 font-bold leading-tight line-clamp-1">
-                Completados <span className="text-emerald-400 font-medium">/ Cerrados</span>
+              <p className="text-[10px] font-mono uppercase tracking-wider text-emerald-600 font-bold leading-tight line-clamp-1">
+                Completados <span className="text-emerald-500 font-normal">(Roster / Contratistas)</span>
               </p>
               <div className="flex items-baseline gap-2 mt-1 flex-wrap">
                 <h4 className="text-xl font-bold font-display text-emerald-700 leading-none">
-                  {metrics.resolvedRoster} <span className="text-emerald-400 font-medium">/</span> {metrics.resolvedContractor}
+                  {metrics.resolved}
                 </h4>
-                {currentWeekRange && (
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-500 font-bold truncate">
-                    (Semana: {currentWeekRange.replace(/Semana /, '').replace(/\/\d{4}/g, '')})
-                  </span>
-                )}
+                <span className="text-xs font-semibold text-slate-500 font-mono">
+                  ({metrics.resolvedRoster} Roster / {metrics.resolvedContractor} Cont.)
+                </span>
               </div>
             </div>
           </div>
@@ -5146,10 +5522,10 @@ export default function RequestBacklogTab({
               <div>
                 <h4 className="font-display font-extrabold text-sm text-slate-850 flex items-center gap-2">
                   <Database className="w-4.5 h-4.5 text-indigo-600" />
-                  Sincronización de CRM (Subir Excel)
+                  Sincronización de CRM SupportCenter Plus
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5 max-w-3xl">
-                  Sube el archivo Excel exportado del CRM con las pestañas <strong className="text-slate-700">"en curso"</strong> y <strong className="text-slate-700">"done"</strong>. El sistema actualizará automáticamente la lista de requerimientos activos y enviará los completados nuevos al Backlog Semanal.
+                  Sincronice directamente en tiempo real mediante la API REST v3 de <strong className="text-indigo-600">SupportCenter Plus (crm.fhons.com.do:8443)</strong> o cargue manualmente un archivo Excel.
                 </p>
               </div>
               <div className="shrink-0 flex items-center gap-2">
@@ -5176,16 +5552,69 @@ export default function RequestBacklogTab({
                   />
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={handleDirectManageEngineSync}
                     disabled={loadStatus === 'loading' || isWeekExpired}
-                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     <RefreshCw className={`w-4 h-4 ${loadStatus === 'loading' ? 'animate-spin' : ''}`} />
-                    {loadStatus === 'loading' ? 'Procesando archivo...' : 'Seleccionar Archivo Excel'}
+                    {loadStatus === 'loading' ? 'Consultando SupportCenter Plus...' : 'Sincronizar en Tiempo Real con SupportCenter Plus'}
                   </button>
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    {loadStatus === 'loading' ? 'Sincronizando con base de datos local...' : 'Selecciona un archivo .xlsx'}
-                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={loadStatus === 'loading' || isWeekExpired}
+                    className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer border border-slate-200 disabled:opacity-50"
+                  >
+                    Cargar Archivo Excel (.xlsx)
+                  </button>
+
+                  {/* Auto-Sync Background Settings */}
+                  <div className="flex items-center gap-2 bg-indigo-50/70 border border-indigo-200/80 rounded-xl px-3 py-2 text-xs font-medium text-slate-700" title="Sincronización automática operativa únicamente de 8:00 AM a 8:00 PM">
+                    <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                    <span className="text-[11px] font-bold text-slate-700">Auto-Sincro:</span>
+                    <select
+                      value={autoSyncInterval}
+                      onChange={(e) => handleAutoSyncChange(e.target.value)}
+                      className="bg-white border border-indigo-200 text-slate-800 text-[11px] font-semibold rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                    >
+                      <option value="off">Desactivado</option>
+                      <option value="5">Cada 5 minutos</option>
+                      <option value="10">Cada 10 minutos</option>
+                      <option value="15">Cada 15 minutos</option>
+                      <option value="30">Cada 30 minutos</option>
+                    </select>
+                    <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded">
+                      8 AM - 8 PM
+                    </span>
+                    {isAutoSyncing && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 animate-pulse ml-1">
+                        <RefreshCw className="w-3 h-3 animate-spin text-indigo-600" /> Auto-actualizando...
+                      </span>
+                    )}
+                    {!isAutoSyncing && autoSyncInterval !== 'off' && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-indigo-600 font-medium ml-1">
+                        {lastAutoSyncTime && (
+                          <span>
+                            Última: {lastAutoSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                        {nextAutoSyncTime && (
+                          <span className="bg-indigo-100/90 text-indigo-700 px-1.5 py-0.5 rounded font-mono font-bold">
+                            Próxima: {nextAutoSyncTime.getDate() !== new Date().getDate() ? 'Mañana ' : ''}{nextAutoSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200/80 rounded-lg text-emerald-700 text-[11px] font-medium ml-auto">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    API Conectada: crm.fhons.com.do:8443
+                  </div>
                 </div>
               ) : (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4 animate-fadeIn">

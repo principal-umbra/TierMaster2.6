@@ -3,6 +3,7 @@ import { TierConfig, DimensionType } from '../../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { INITIAL_AGENTS } from '../../mockData';
 import { overrideSeedDatabase, fetchCRMData, saveCRMData, subscribeToGoogleMapsUsage, resetGoogleMapsUsage, saveGoogleMapsKey, getFirebaseLocalUsage } from '../../db/firebaseService';
+import { ManageEngineConfigCard } from './ManageEngineConfigCard';
 
 const APPS_SCRIPT_CODE = `/**
  * ====================================================================================
@@ -1291,6 +1292,9 @@ service cloud.firestore {
 
       {activeTab === 'integraciones' && (
         <>
+      {/* Integración ManageEngine ServiceDesk Plus */}
+      <ManageEngineConfigCard />
+
       {/* Sección de Monitoreo de Google Maps Platform */}
       <div className="bg-[#111827]/60 backdrop-blur-md p-6 rounded-2xl border border-white/5 shadow-xl flex flex-col gap-5 font-sans">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
