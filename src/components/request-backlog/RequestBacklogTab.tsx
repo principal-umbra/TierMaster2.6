@@ -1179,6 +1179,7 @@ export default function RequestBacklogTab({
           setLoadStatus('success');
           setLoadMessage(msg || 'Actualización completada.');
           setPendingUploadData(null);
+          setLastAutoSyncTime(new Date());
       } catch(err: any) {
           console.error(err);
           setLoadStatus('error');
@@ -1516,9 +1517,13 @@ export default function RequestBacklogTab({
         const rawOpenRows = openJson.tickets || [];
         const rawCompletedRows = completedJson ? (completedJson.tickets || []) : [];
 
-        // Update active requirements (en curso)
+        // Standardize CRM data
+        const enCursoRows = standardizeCRMData({ headers: STANDARD_HEADERS_ORDER, rows: rawOpenRows }).rows;
+        const doneRows = standardizeCRMData({ headers: STANDARD_HEADERS_ORDER, rows: rawCompletedRows }).rows;
+
+        // 1. Update active requirements (en curso)
         const currentEnCurso = await fetchAsCRMData('requerimientos_en_curso');
-        const newEnCursoIds = new Set(rawOpenRows.map((r: any) => String(r.ID || r.id || '').trim().toUpperCase()));
+        const newEnCursoIds = new Set(enCursoRows.map(r => String(r.ID || r.id || '').trim().toUpperCase()));
         
         const docsToDelete = currentEnCurso.rows.filter(r => {
           const idVal = String(r.ID || r.id || '').trim().toUpperCase();
@@ -1527,37 +1532,47 @@ export default function RequestBacklogTab({
 
         for (const doc of docsToDelete) {
           const idVal = String(doc.ID || doc.id || '').trim();
-          await deleteCRMItem('requerimientos_en_curso', idVal);
+          if (idVal) {
+            await deleteCRMItem('requerimientos_en_curso', idVal);
+          }
         }
 
-        if (rawOpenRows.length > 0) {
-          await saveCRMData('requerimientos_en_curso', rawOpenRows);
+        if (enCursoRows.length > 0) {
+          await saveCRMData('requerimientos_en_curso', enCursoRows);
         }
 
-        // Process completed tickets in current active week
-        const newDoneRows: Record<string, string>[] = [];
-        rawCompletedRows.forEach((row: any) => {
-          const resolvedDateVal = String(row['Resolved Date'] || '').trim();
+        // 2. Process completed tickets in current active week
+        let freshHist: CRMData = { headers: [], rows: [] };
+        try { freshHist = await fetchAsCRMData('historico_completados'); } catch (err) {}
+        const standardHistorical = standardizeCRMData(freshHist);
+        const historicalIdsSet = new Set(standardHistorical.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()).filter(Boolean));
+
+        let freshDone: CRMData = { headers: [], rows: [] };
+        try { freshDone = await fetchAsCRMData('backlog_semanal'); } catch (err) {}
+        const standardDone = standardizeCRMData(freshDone);
+        const doneIdsSet = new Set(standardDone.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()).filter(Boolean));
+
+        const brandNewDoneRows: Record<string, string>[] = [];
+        doneRows.forEach(row => {
+          const idVal = String(row.ID || row.id || '').trim();
+          const idValUpper = idVal.toUpperCase();
+          if (!idVal) return;
+
+          const resolvedDateVal = String(row['Resolved Date'] || row['Fecha completado'] || row['Created Date'] || '').trim();
           const inRange = isDateInActiveWeekRange(resolvedDateVal, activeWeek);
-          if (inRange) {
-            newDoneRows.push(row);
+
+          if (!inRange && resolvedDateVal) return;
+
+          if (!doneIdsSet.has(idValUpper) && !historicalIdsSet.has(idValUpper)) {
+            const newRow = { ...row };
+            newRow['Estado Registro'] = 'PENDIENTE A CONFIRMAR';
+            newRow['sprint_trabajo'] = activeWeek;
+            brandNewDoneRows.push(newRow);
           }
         });
 
-        if (newDoneRows.length > 0) {
-          let freshDone: CRMData = { headers: [], rows: [] };
-          try { freshDone = await fetchAsCRMData('backlog_semanal'); } catch (err) {}
-          const standardDone = standardizeCRMData(freshDone);
-          const existingIds = new Set(standardDone.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()));
-
-          const brandNewDone = newDoneRows.filter(r => {
-            const idVal = String(r.ID || r.id || '').trim().toUpperCase();
-            return idVal && !existingIds.has(idVal);
-          });
-
-          if (brandNewDone.length > 0) {
-            await saveCRMData('backlog_semanal', [...standardDone.rows, ...brandNewDone]);
-          }
+        if (brandNewDoneRows.length > 0) {
+          await saveCRMData('backlog_semanal', [...standardDone.rows, ...brandNewDoneRows]);
         }
 
         await separateContractorBacklog();
@@ -5612,6 +5627,7 @@ export default function RequestBacklogTab({
                       className="bg-white border border-indigo-200 text-slate-800 text-[11px] font-semibold rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                     >
                       <option value="off">Desactivado</option>
+                      <option value="1">Cada 1 minuto</option>
                       <option value="5">Cada 5 minutos</option>
                       <option value="10">Cada 10 minutos</option>
                       <option value="15">Cada 15 minutos</option>
