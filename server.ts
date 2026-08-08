@@ -247,6 +247,9 @@ app.post('/api/manageengine/fetch-tickets', async (req, res) => {
     }
 
     let cleanUrl = (apiUrl || '').trim().replace(/\/$/, '');
+    if (cleanUrl.toLowerCase().endsWith('/requests')) {
+      cleanUrl = cleanUrl.replace(/\/requests$/i, '').replace(/\/$/, '');
+    }
     if (cleanUrl && !cleanUrl.toLowerCase().endsWith('/api/v3')) {
       cleanUrl = `${cleanUrl}/api/v3`;
     }
@@ -291,18 +294,42 @@ app.post('/api/manageengine/fetch-tickets', async (req, res) => {
         headers,
       });
 
-      // Fallback: If viewId filter returned error (e.g., 404 or 400), try without filter_by
-      if (!meRes.ok && activeViewId && listInfo.filter_by) {
-        delete listInfo.filter_by;
-        const fallbackParams = new URLSearchParams();
-        fallbackParams.append('input_data', JSON.stringify({ list_info: listInfo }));
-        let fallbackEndpoint = `${cleanUrl}/requests?${fallbackParams.toString()}`;
-        if (portalName) {
-          fallbackEndpoint = `${cleanUrl}/portal/${portalName}/requests?${fallbackParams.toString()}`;
+      // Fallback 1: If endpoint with portalName failed (e.g. 404), retry without portalName
+      if (!meRes.ok && portalName) {
+        const noPortalEndpoint = `${cleanUrl}/requests?${urlParams.toString()}`;
+        const retryPortalRes = await fetch(noPortalEndpoint, { method: 'GET', headers });
+        if (retryPortalRes.ok) {
+          meRes = retryPortalRes;
         }
-        const retryRes = await fetch(fallbackEndpoint, { method: 'GET', headers });
+      }
+
+      // Fallback 2: If viewId filter returned error (e.g., 404 or 400), try without filter_by
+      if (!meRes.ok && listInfo.filter_by) {
+        const listInfoNoFilter = { ...listInfo };
+        delete listInfoNoFilter.filter_by;
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.append('input_data', JSON.stringify({ list_info: listInfoNoFilter }));
+        
+        let fallbackEndpoint = `${cleanUrl}/requests?${fallbackParams.toString()}`;
+        let retryRes = await fetch(fallbackEndpoint, { method: 'GET', headers });
         if (retryRes.ok) {
           meRes = retryRes;
+        }
+      }
+
+      // Fallback 3: If custom apiUrl failed and differs from ENV, try env/default URL
+      const envUrl = process.env.MANAGEENGINE_API_URL || 'https://crm.fhons.com.do:8443';
+      let cleanEnvUrl = envUrl.trim().replace(/\/$/, '');
+      if (cleanEnvUrl.toLowerCase().endsWith('/requests')) cleanEnvUrl = cleanEnvUrl.replace(/\/requests$/i, '').replace(/\/$/, '');
+      if (!cleanEnvUrl.toLowerCase().endsWith('/api/v3')) cleanEnvUrl = `${cleanEnvUrl}/api/v3`;
+
+      if (!meRes.ok && cleanUrl !== cleanEnvUrl) {
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.append('input_data', JSON.stringify({ list_info: { row_count: Math.min(rowCount, 500), start_index: currentStartIndex, sort_field: 'created_time', sort_order: 'desc' } }));
+        const envEndpoint = `${cleanEnvUrl}/requests?${fallbackParams.toString()}`;
+        const envRetryRes = await fetch(envEndpoint, { method: 'GET', headers });
+        if (envRetryRes.ok) {
+          meRes = envRetryRes;
         }
       }
 
