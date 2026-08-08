@@ -674,13 +674,13 @@ export default function RequestBacklogTab({
       try {
         openJson = JSON.parse(openText);
       } catch {
-        throw new Error(`Respuesta no válida del servidor backend al consultar tickets abiertos (${openRes.status}). ${openText.slice(0, 120)}`);
+        throw new Error(`Respuesta del servidor no es un JSON válido (${openRes.status}). Verifique la conexión con SupportCenter Plus.`);
       }
 
       try {
         completedJson = JSON.parse(completedText);
       } catch {
-        throw new Error(`Respuesta no válida del servidor backend al consultar tickets completados (${completedRes.status}). ${completedText.slice(0, 120)}`);
+        throw new Error(`Respuesta del servidor para tickets completados no es un JSON válido (${completedRes.status}).`);
       }
 
       if (!openRes.ok || !openJson.success) {
@@ -1435,15 +1435,12 @@ export default function RequestBacklogTab({
   }, [currentWeekRange]);
 
   // Silent Background Auto-Sync Handler
+  const isAutoSyncingRef = useRef(false);
+
   const handleSilentBackgroundSync = useCallback(async () => {
-    if (isWeekExpired || isAutoSyncing || pendingUploadData) return;
+    if (isWeekExpired || isAutoSyncingRef.current || pendingUploadData) return;
 
-    // Regla de horario: Solo ejecutar entre las 8:00 AM (08:00) y las 8:00 PM (20:00)
-    const currentHour = new Date().getHours();
-    if (currentHour < 8 || currentHour >= 20) {
-      return;
-    }
-
+    isAutoSyncingRef.current = true;
     setIsAutoSyncing(true);
     try {
       const [openRes, completedRes] = await Promise.all([
@@ -1459,13 +1456,13 @@ export default function RequestBacklogTab({
         })
       ]);
 
-      const openJson = await openRes.json();
-      const completedJson = await completedRes.json();
+      const openJson = await openRes.json().catch(() => null);
+      const completedJson = await completedRes.json().catch(() => null);
 
-      if (openRes.ok && openJson.success) {
+      if (openRes.ok && openJson && openJson.success) {
         const activeWeek = currentWeekRange || '';
         const rawOpenRows = openJson.tickets || [];
-        const rawCompletedRows = completedJson.tickets || [];
+        const rawCompletedRows = completedJson ? (completedJson.tickets || []) : [];
 
         // Update active requirements (en curso)
         const currentEnCurso = await fetchAsCRMData('requerimientos_en_curso');
@@ -1520,49 +1517,23 @@ export default function RequestBacklogTab({
     } catch (err) {
       console.error('Error en auto-sincronización en segundo plano:', err);
     } finally {
+      isAutoSyncingRef.current = false;
       setIsAutoSyncing(false);
     }
-  }, [isWeekExpired, isAutoSyncing, pendingUploadData, currentWeekRange]);
+  }, [isWeekExpired, pendingUploadData, currentWeekRange]);
 
   // Track last executed slot timestamp and current target slot ref to prevent missed or duplicate triggers
   const lastExecutedSlotRef = useRef<number | null>(null);
   const targetSyncSlotRef = useRef<Date | null>(null);
 
-  // Helper to calculate next grid slot anchored at 8:00 AM within 8:00 AM - 8:00 PM window
+  // Helper to calculate next sync target slot
   const getNextAutoSyncSlot = useCallback((minutes: number, now: Date = new Date()): Date | null => {
     if (minutes <= 0) return null;
-
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const date = now.getDate();
-
-    const startToday = new Date(year, month, date, 8, 0, 0, 0);
-    const endToday = new Date(year, month, date, 20, 0, 0, 0);
-
-    if (now.getTime() < startToday.getTime()) {
-      return startToday;
-    }
-
-    if (now.getTime() >= endToday.getTime()) {
-      return new Date(year, month, date + 1, 8, 0, 0, 0);
-    }
-
-    const elapsedMs = now.getTime() - startToday.getTime();
     const intervalMs = minutes * 60 * 1000;
-
-    const slotIndex = Math.floor(elapsedMs / intervalMs);
-    let targetMs = startToday.getTime() + slotIndex * intervalMs;
-
-    // If targetMs is in the past by more than 1 second, advance to the next interval slot
-    if (targetMs < now.getTime() - 1000) {
-      targetMs += intervalMs;
-    }
-
-    if (targetMs > endToday.getTime()) {
-      return new Date(year, month, date + 1, 8, 0, 0, 0);
-    }
-
-    return new Date(targetMs);
+    const currentMs = now.getTime();
+    // Anchor grid or calculate next interval slot from now
+    const nextMs = currentMs + intervalMs;
+    return new Date(nextMs);
   }, []);
 
   // Ref to always hold the latest handleSilentBackgroundSync function reference
@@ -1607,18 +1578,9 @@ export default function RequestBacklogTab({
       const targetMs = target.getTime();
       const nowMs = now.getTime();
 
-      // Outside operating hours: strictly 8:00 AM (08:00) to 8:00 PM (20:00)
-      const currentHour = now.getHours();
-      if (currentHour < 8 || currentHour >= 20) {
-        const nextSlot = getNextAutoSyncSlot(mins, now);
-        targetSyncSlotRef.current = nextSlot;
-        setNextAutoSyncTime(nextSlot);
-        return;
-      }
-
       // Check if current time has reached or passed the target slot
       if (nowMs >= targetMs) {
-        if (lastExecutedSlotRef.current !== targetMs && !isAutoSyncing) {
+        if (lastExecutedSlotRef.current !== targetMs && !isAutoSyncingRef.current) {
           lastExecutedSlotRef.current = targetMs;
           silentSyncRef.current().finally(() => {
             const freshNext = getNextAutoSyncSlot(mins, new Date());
@@ -1626,15 +1588,11 @@ export default function RequestBacklogTab({
             setNextAutoSyncTime(freshNext);
           });
         }
-      } else {
-        if (nextAutoSyncTime?.getTime() !== targetMs) {
-          setNextAutoSyncTime(target);
-        }
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [autoSyncInterval, isAutoSyncing, getNextAutoSyncSlot, nextAutoSyncTime]);
+  }, [autoSyncInterval, getNextAutoSyncSlot]);
 
   const showWeekModalState = useState(false); // Let's keep showWeekModal as is below
   const [pendingAction, setPendingAction] = useState<'reset' | 'start' | 'confirm' | 'separate' | null>(null);

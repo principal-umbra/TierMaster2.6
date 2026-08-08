@@ -243,19 +243,34 @@ app.post('/api/manageengine/fetch-tickets', async (req, res) => {
         endpoint = `${cleanUrl}/portal/${portalName}/requests?${urlParams.toString()}`;
       }
 
-      const meRes = await fetch(endpoint, {
+      let meRes = await fetch(endpoint, {
         method: 'GET',
         headers,
       });
+
+      // Fallback: If viewId filter returned error (e.g., 404 or 400), try without filter_by
+      if (!meRes.ok && activeViewId && listInfo.filter_by) {
+        delete listInfo.filter_by;
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.append('input_data', JSON.stringify({ list_info: listInfo }));
+        let fallbackEndpoint = `${cleanUrl}/requests?${fallbackParams.toString()}`;
+        if (portalName) {
+          fallbackEndpoint = `${cleanUrl}/portal/${portalName}/requests?${fallbackParams.toString()}`;
+        }
+        const retryRes = await fetch(fallbackEndpoint, { method: 'GET', headers });
+        if (retryRes.ok) {
+          meRes = retryRes;
+        }
+      }
 
       const textResponse = await meRes.text();
 
       if (!meRes.ok) {
         if (pagesFetched === 0) {
-          return res.status(meRes.status).json({
+          return res.status(200).json({
             success: false,
-            error: `Error al consultar tickets en ManageEngine (${meRes.status})`,
-            details: textResponse,
+            error: `Respuesta no exitosa del servidor ManageEngine (${meRes.status})`,
+            details: textResponse.slice(0, 300),
           });
         }
         break;
