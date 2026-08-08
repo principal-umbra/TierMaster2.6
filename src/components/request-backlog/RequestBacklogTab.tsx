@@ -651,17 +651,43 @@ export default function RequestBacklogTab({
     setPendingUploadData(null);
 
     try {
+      const settings = await fetchSystemSettings().catch(() => ({}));
+      const meConfig = settings?.manageEngineConfig || {};
+
       // 1. Fetch open and completed tickets in parallel from SupportCenter Plus API
       const [openRes, completedRes] = await Promise.all([
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ statusFilter: 'open', rowCount: 500, viewId: '637' })
+          body: JSON.stringify({
+            apiUrl: meConfig.apiUrl,
+            portalName: meConfig.portalName,
+            authType: meConfig.authType,
+            technicianKey: meConfig.technicianKey,
+            oauthClientId: meConfig.oauthClientId,
+            oauthClientSecret: meConfig.oauthClientSecret,
+            oauthRefreshToken: meConfig.oauthRefreshToken,
+            oauthDomain: meConfig.oauthDomain,
+            statusFilter: 'open',
+            rowCount: 500,
+            viewId: '637'
+          })
         }),
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ statusFilter: 'completed', rowCount: 500 })
+          body: JSON.stringify({
+            apiUrl: meConfig.apiUrl,
+            portalName: meConfig.portalName,
+            authType: meConfig.authType,
+            technicianKey: meConfig.technicianKey,
+            oauthClientId: meConfig.oauthClientId,
+            oauthClientSecret: meConfig.oauthClientSecret,
+            oauthRefreshToken: meConfig.oauthRefreshToken,
+            oauthDomain: meConfig.oauthDomain,
+            statusFilter: 'completed',
+            rowCount: 500
+          })
         })
       ]);
 
@@ -1443,16 +1469,42 @@ export default function RequestBacklogTab({
     isAutoSyncingRef.current = true;
     setIsAutoSyncing(true);
     try {
+      const settings = await fetchSystemSettings().catch(() => ({}));
+      const meConfig = settings?.manageEngineConfig || {};
+
       const [openRes, completedRes] = await Promise.all([
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ statusFilter: 'open', rowCount: 500, viewId: '637' })
+          body: JSON.stringify({
+            apiUrl: meConfig.apiUrl,
+            portalName: meConfig.portalName,
+            authType: meConfig.authType,
+            technicianKey: meConfig.technicianKey,
+            oauthClientId: meConfig.oauthClientId,
+            oauthClientSecret: meConfig.oauthClientSecret,
+            oauthRefreshToken: meConfig.oauthRefreshToken,
+            oauthDomain: meConfig.oauthDomain,
+            statusFilter: 'open',
+            rowCount: 500,
+            viewId: '637'
+          })
         }),
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ statusFilter: 'completed', rowCount: 500 })
+          body: JSON.stringify({
+            apiUrl: meConfig.apiUrl,
+            portalName: meConfig.portalName,
+            authType: meConfig.authType,
+            technicianKey: meConfig.technicianKey,
+            oauthClientId: meConfig.oauthClientId,
+            oauthClientSecret: meConfig.oauthClientSecret,
+            oauthRefreshToken: meConfig.oauthRefreshToken,
+            oauthDomain: meConfig.oauthDomain,
+            statusFilter: 'completed',
+            rowCount: 500
+          })
         })
       ]);
 

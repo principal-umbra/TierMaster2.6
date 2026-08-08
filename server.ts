@@ -282,7 +282,7 @@ app.post('/api/manageengine/fetch-tickets', async (req, res) => {
         lastData = data;
       } catch {
         if (pagesFetched === 0) {
-          return res.status(400).json({
+          return res.status(200).json({
             success: false,
             error: `La respuesta de ManageEngine no es un JSON válido. Verifique la URL base configurada (${cleanUrl}).`,
             details: textResponse.slice(0, 300),
