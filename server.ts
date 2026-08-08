@@ -55,16 +55,37 @@ app.get('/api/manageengine/status', (_req, res) => {
 // 2. Connection Test Endpoint
 app.post('/api/manageengine/test-connection', async (req, res) => {
   try {
-    const {
-      apiUrl = process.env.MANAGEENGINE_API_URL || 'https://sdpondemand.manageengine.com/api/v3',
-      technicianKey = process.env.MANAGEENGINE_TECHNICIAN_KEY || '',
-      portalName = process.env.MANAGEENGINE_PORTAL_NAME || '',
-      authType = process.env.MANAGEENGINE_AUTH_TYPE || 'technician_key',
-      oauthClientId = process.env.MANAGEENGINE_OAUTH_CLIENT_ID || '',
-      oauthClientSecret = process.env.MANAGEENGINE_OAUTH_CLIENT_SECRET || '',
-      oauthRefreshToken = process.env.MANAGEENGINE_OAUTH_REFRESH_TOKEN || '',
-      oauthDomain = process.env.MANAGEENGINE_OAUTH_DOMAIN || 'com',
-    } = req.body || {};
+    const apiUrl = (req.body?.apiUrl && String(req.body.apiUrl).trim() !== '')
+      ? req.body.apiUrl
+      : (process.env.MANAGEENGINE_API_URL || 'https://sdpondemand.manageengine.com/api/v3');
+
+    const technicianKey = (req.body?.technicianKey && String(req.body.technicianKey).trim() !== '')
+      ? req.body.technicianKey
+      : (process.env.MANAGEENGINE_TECHNICIAN_KEY || '');
+
+    const portalName = (req.body?.portalName && String(req.body.portalName).trim() !== '')
+      ? req.body.portalName
+      : (process.env.MANAGEENGINE_PORTAL_NAME || '');
+
+    const authType = (req.body?.authType && String(req.body.authType).trim() !== '')
+      ? req.body.authType
+      : (process.env.MANAGEENGINE_AUTH_TYPE || 'technician_key');
+
+    const oauthClientId = (req.body?.oauthClientId && String(req.body.oauthClientId).trim() !== '')
+      ? req.body.oauthClientId
+      : (process.env.MANAGEENGINE_OAUTH_CLIENT_ID || '');
+
+    const oauthClientSecret = (req.body?.oauthClientSecret && String(req.body.oauthClientSecret).trim() !== '')
+      ? req.body.oauthClientSecret
+      : (process.env.MANAGEENGINE_OAUTH_CLIENT_SECRET || '');
+
+    const oauthRefreshToken = (req.body?.oauthRefreshToken && String(req.body.oauthRefreshToken).trim() !== '')
+      ? req.body.oauthRefreshToken
+      : (process.env.MANAGEENGINE_OAUTH_REFRESH_TOKEN || '');
+
+    const oauthDomain = (req.body?.oauthDomain && String(req.body.oauthDomain).trim() !== '')
+      ? req.body.oauthDomain
+      : (process.env.MANAGEENGINE_OAUTH_DOMAIN || 'com');
 
     let accessToken = '';
 
@@ -166,20 +187,42 @@ app.post('/api/manageengine/test-connection', async (req, res) => {
 // 3. Fetch Tickets Endpoint (Open/In-Progress or Completed)
 app.post('/api/manageengine/fetch-tickets', async (req, res) => {
   try {
-    const {
-      apiUrl = process.env.MANAGEENGINE_API_URL || 'https://sdpondemand.manageengine.com/api/v3',
-      technicianKey = process.env.MANAGEENGINE_TECHNICIAN_KEY || '',
-      portalName = process.env.MANAGEENGINE_PORTAL_NAME || '',
-      authType = process.env.MANAGEENGINE_AUTH_TYPE || 'technician_key',
-      oauthClientId = process.env.MANAGEENGINE_OAUTH_CLIENT_ID || '',
-      oauthClientSecret = process.env.MANAGEENGINE_OAUTH_CLIENT_SECRET || '',
-      oauthRefreshToken = process.env.MANAGEENGINE_OAUTH_REFRESH_TOKEN || '',
-      oauthDomain = process.env.MANAGEENGINE_OAUTH_DOMAIN || 'com',
-      viewId = process.env.MANAGEENGINE_VIEW_ID || '637',
-      statusFilter = 'open', // 'open', 'completed', 'all'
-      rowCount = 200,
-      startIndex = 1,
-    } = req.body || {};
+    const apiUrl = (req.body?.apiUrl && String(req.body.apiUrl).trim() !== '')
+      ? req.body.apiUrl
+      : (process.env.MANAGEENGINE_API_URL || 'https://sdpondemand.manageengine.com/api/v3');
+
+    const technicianKey = (req.body?.technicianKey && String(req.body.technicianKey).trim() !== '')
+      ? req.body.technicianKey
+      : (process.env.MANAGEENGINE_TECHNICIAN_KEY || '');
+
+    const portalName = (req.body?.portalName && String(req.body.portalName).trim() !== '')
+      ? req.body.portalName
+      : (process.env.MANAGEENGINE_PORTAL_NAME || '');
+
+    const authType = (req.body?.authType && String(req.body.authType).trim() !== '')
+      ? req.body.authType
+      : (process.env.MANAGEENGINE_AUTH_TYPE || 'technician_key');
+
+    const oauthClientId = (req.body?.oauthClientId && String(req.body.oauthClientId).trim() !== '')
+      ? req.body.oauthClientId
+      : (process.env.MANAGEENGINE_OAUTH_CLIENT_ID || '');
+
+    const oauthClientSecret = (req.body?.oauthClientSecret && String(req.body.oauthClientSecret).trim() !== '')
+      ? req.body.oauthClientSecret
+      : (process.env.MANAGEENGINE_OAUTH_CLIENT_SECRET || '');
+
+    const oauthRefreshToken = (req.body?.oauthRefreshToken && String(req.body.oauthRefreshToken).trim() !== '')
+      ? req.body.oauthRefreshToken
+      : (process.env.MANAGEENGINE_OAUTH_REFRESH_TOKEN || '');
+
+    const oauthDomain = (req.body?.oauthDomain && String(req.body.oauthDomain).trim() !== '')
+      ? req.body.oauthDomain
+      : (process.env.MANAGEENGINE_OAUTH_DOMAIN || 'com');
+
+    const viewId = req.body?.viewId || process.env.MANAGEENGINE_VIEW_ID || '637';
+    const statusFilter = req.body?.statusFilter || 'open';
+    const rowCount = req.body?.rowCount || 200;
+    const startIndex = req.body?.startIndex || 1;
 
     let accessToken = '';
     if (authType === 'oauth2' && oauthClientId && oauthClientSecret && oauthRefreshToken) {

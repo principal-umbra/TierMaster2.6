@@ -630,6 +630,7 @@ export default function RequestBacklogTab({
   const [lastAutoSyncTime, setLastAutoSyncTime] = useState<Date | null>(null);
   const [nextAutoSyncTime, setNextAutoSyncTime] = useState<Date | null>(null);
   const [isAutoSyncing, setIsAutoSyncing] = useState<boolean>(false);
+  const [lastAutoSyncResult, setLastAutoSyncResult] = useState<{ success: boolean; count?: number; doneCount?: number; message?: string } | null>(null);
 
   const handleAutoSyncChange = (val: string) => {
     setAutoSyncInterval(val);
@@ -654,40 +655,36 @@ export default function RequestBacklogTab({
       const settings = await fetchSystemSettings().catch(() => ({}));
       const meConfig = settings?.manageEngineConfig || {};
 
+      const payloadOpen: Record<string, any> = {
+        statusFilter: 'open',
+        rowCount: 500,
+        viewId: '637'
+      };
+      const payloadCompleted: Record<string, any> = {
+        statusFilter: 'completed',
+        rowCount: 500
+      };
+
+      if (meConfig.apiUrl) { payloadOpen.apiUrl = meConfig.apiUrl; payloadCompleted.apiUrl = meConfig.apiUrl; }
+      if (meConfig.portalName) { payloadOpen.portalName = meConfig.portalName; payloadCompleted.portalName = meConfig.portalName; }
+      if (meConfig.authType) { payloadOpen.authType = meConfig.authType; payloadCompleted.authType = meConfig.authType; }
+      if (meConfig.technicianKey) { payloadOpen.technicianKey = meConfig.technicianKey; payloadCompleted.technicianKey = meConfig.technicianKey; }
+      if (meConfig.oauthClientId) { payloadOpen.oauthClientId = meConfig.oauthClientId; payloadCompleted.oauthClientId = meConfig.oauthClientId; }
+      if (meConfig.oauthClientSecret) { payloadOpen.oauthClientSecret = meConfig.oauthClientSecret; payloadCompleted.oauthClientSecret = meConfig.oauthClientSecret; }
+      if (meConfig.oauthRefreshToken) { payloadOpen.oauthRefreshToken = meConfig.oauthRefreshToken; payloadCompleted.oauthRefreshToken = meConfig.oauthRefreshToken; }
+      if (meConfig.oauthDomain) { payloadOpen.oauthDomain = meConfig.oauthDomain; payloadCompleted.oauthDomain = meConfig.oauthDomain; }
+
       // 1. Fetch open and completed tickets in parallel from SupportCenter Plus API
       const [openRes, completedRes] = await Promise.all([
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiUrl: meConfig.apiUrl,
-            portalName: meConfig.portalName,
-            authType: meConfig.authType,
-            technicianKey: meConfig.technicianKey,
-            oauthClientId: meConfig.oauthClientId,
-            oauthClientSecret: meConfig.oauthClientSecret,
-            oauthRefreshToken: meConfig.oauthRefreshToken,
-            oauthDomain: meConfig.oauthDomain,
-            statusFilter: 'open',
-            rowCount: 500,
-            viewId: '637'
-          })
+          body: JSON.stringify(payloadOpen)
         }),
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiUrl: meConfig.apiUrl,
-            portalName: meConfig.portalName,
-            authType: meConfig.authType,
-            technicianKey: meConfig.technicianKey,
-            oauthClientId: meConfig.oauthClientId,
-            oauthClientSecret: meConfig.oauthClientSecret,
-            oauthRefreshToken: meConfig.oauthRefreshToken,
-            oauthDomain: meConfig.oauthDomain,
-            statusFilter: 'completed',
-            rowCount: 500
-          })
+          body: JSON.stringify(payloadCompleted)
         })
       ]);
 
@@ -1461,11 +1458,16 @@ export default function RequestBacklogTab({
     }
   }, [currentWeekRange]);
 
+  // Refs for fetch functions to avoid TDZ block scoping issues
+  const fetchRef = useRef<() => Promise<void>>();
+  const fetchLogRef = useRef<() => Promise<void>>();
+  const fetchDoneRef = useRef<() => Promise<void>>();
+
   // Silent Background Auto-Sync Handler
   const isAutoSyncingRef = useRef(false);
 
   const handleSilentBackgroundSync = useCallback(async () => {
-    if (isWeekExpired || isAutoSyncingRef.current || pendingUploadData) return;
+    if (isWeekExpired || isAutoSyncingRef.current) return;
 
     isAutoSyncingRef.current = true;
     setIsAutoSyncing(true);
@@ -1473,39 +1475,36 @@ export default function RequestBacklogTab({
       const settings = await fetchSystemSettings().catch(() => ({}));
       const meConfig = settings?.manageEngineConfig || {};
 
+      // Prepare request payload omitting empty values so server defaults kick in
+      const payloadOpen: Record<string, any> = {
+        statusFilter: 'open',
+        rowCount: 500,
+        viewId: '637'
+      };
+      const payloadCompleted: Record<string, any> = {
+        statusFilter: 'completed',
+        rowCount: 500
+      };
+
+      if (meConfig.apiUrl) { payloadOpen.apiUrl = meConfig.apiUrl; payloadCompleted.apiUrl = meConfig.apiUrl; }
+      if (meConfig.portalName) { payloadOpen.portalName = meConfig.portalName; payloadCompleted.portalName = meConfig.portalName; }
+      if (meConfig.authType) { payloadOpen.authType = meConfig.authType; payloadCompleted.authType = meConfig.authType; }
+      if (meConfig.technicianKey) { payloadOpen.technicianKey = meConfig.technicianKey; payloadCompleted.technicianKey = meConfig.technicianKey; }
+      if (meConfig.oauthClientId) { payloadOpen.oauthClientId = meConfig.oauthClientId; payloadCompleted.oauthClientId = meConfig.oauthClientId; }
+      if (meConfig.oauthClientSecret) { payloadOpen.oauthClientSecret = meConfig.oauthClientSecret; payloadCompleted.oauthClientSecret = meConfig.oauthClientSecret; }
+      if (meConfig.oauthRefreshToken) { payloadOpen.oauthRefreshToken = meConfig.oauthRefreshToken; payloadCompleted.oauthRefreshToken = meConfig.oauthRefreshToken; }
+      if (meConfig.oauthDomain) { payloadOpen.oauthDomain = meConfig.oauthDomain; payloadCompleted.oauthDomain = meConfig.oauthDomain; }
+
       const [openRes, completedRes] = await Promise.all([
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiUrl: meConfig.apiUrl,
-            portalName: meConfig.portalName,
-            authType: meConfig.authType,
-            technicianKey: meConfig.technicianKey,
-            oauthClientId: meConfig.oauthClientId,
-            oauthClientSecret: meConfig.oauthClientSecret,
-            oauthRefreshToken: meConfig.oauthRefreshToken,
-            oauthDomain: meConfig.oauthDomain,
-            statusFilter: 'open',
-            rowCount: 500,
-            viewId: '637'
-          })
+          body: JSON.stringify(payloadOpen)
         }),
         fetch('/api/manageengine/fetch-tickets', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiUrl: meConfig.apiUrl,
-            portalName: meConfig.portalName,
-            authType: meConfig.authType,
-            technicianKey: meConfig.technicianKey,
-            oauthClientId: meConfig.oauthClientId,
-            oauthClientSecret: meConfig.oauthClientSecret,
-            oauthRefreshToken: meConfig.oauthRefreshToken,
-            oauthDomain: meConfig.oauthDomain,
-            statusFilter: 'completed',
-            rowCount: 500
-          })
+          body: JSON.stringify(payloadCompleted)
         })
       ]);
 
@@ -1576,31 +1575,68 @@ export default function RequestBacklogTab({
         }
 
         await separateContractorBacklog();
-        await handleFetch();
-        await handleFetchLog();
-        await handleFetchDoneInProgress();
-        setLastAutoSyncTime(new Date());
+        if (fetchRef.current) await fetchRef.current();
+        if (fetchLogRef.current) await fetchLogRef.current();
+        if (fetchDoneRef.current) await fetchDoneRef.current();
+
+        const now = new Date();
+        setLastAutoSyncTime(now);
+        setLastAutoSyncResult({ success: true, count: enCursoRows.length, doneCount: brandNewDoneRows.length });
+      } else {
+        const errMsg = openJson?.error || openJson?.details || openRes.statusText || 'Error al obtener datos de SupportCenter Plus';
+        console.error('Auto-sincronización fallida:', errMsg);
+        setLastAutoSyncResult({ success: false, message: errMsg });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error en auto-sincronización en segundo plano:', err);
+      setLastAutoSyncResult({ success: false, message: err?.message || 'Error de conexión' });
     } finally {
       isAutoSyncingRef.current = false;
       setIsAutoSyncing(false);
     }
-  }, [isWeekExpired, pendingUploadData, currentWeekRange]);
+  }, [isWeekExpired, currentWeekRange]);
 
   // Track last executed slot timestamp and current target slot ref to prevent missed or duplicate triggers
   const lastExecutedSlotRef = useRef<number | null>(null);
   const targetSyncSlotRef = useRef<Date | null>(null);
 
-  // Helper to calculate next sync target slot
+  // Helper to calculate next sync target slot anchored to 8:00 AM - 8:00 PM operating window
   const getNextAutoSyncSlot = useCallback((minutes: number, now: Date = new Date()): Date | null => {
     if (minutes <= 0) return null;
+
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate();
+
+    const startOfToday = new Date(year, month, date, 8, 0, 0, 0);
+    const endOfToday = new Date(year, month, date, 20, 0, 0, 0);
+
+    const nowMs = now.getTime();
+    const startMs = startOfToday.getTime();
+    const endMs = endOfToday.getTime();
+
+    // 1. Before 8:00 AM today -> First slot is 8:00 AM today
+    if (nowMs < startMs) {
+      return startOfToday;
+    }
+
+    // 2. After or at 8:00 PM today -> Next slot is 8:00 AM tomorrow
+    if (nowMs >= endMs) {
+      return new Date(year, month, date + 1, 8, 0, 0, 0);
+    }
+
+    // 3. Between 8:00 AM and 8:00 PM today -> Calculate fixed grid slot aligned from 8:00 AM
     const intervalMs = minutes * 60 * 1000;
-    const currentMs = now.getTime();
-    // Anchor grid or calculate next interval slot from now
-    const nextMs = currentMs + intervalMs;
-    return new Date(nextMs);
+    const elapsedMs = nowMs - startMs;
+    const intervalsPassed = Math.floor(elapsedMs / intervalMs);
+    const candidateMs = startMs + (intervalsPassed + 1) * intervalMs;
+
+    if (candidateMs <= endMs) {
+      return new Date(candidateMs);
+    } else {
+      // Exceeds 8:00 PM -> Next slot is 8:00 AM tomorrow
+      return new Date(year, month, date + 1, 8, 0, 0, 0);
+    }
   }, []);
 
   // Ref to always hold the latest handleSilentBackgroundSync function reference
@@ -1802,6 +1838,7 @@ export default function RequestBacklogTab({
 
   // Auto-fetch Registro del backlog when subtab changes to confirm_completed, completed_history, roster_analysis, or status_cycle
   useEffect(() => {
+    fetchLogRef.current = handleFetchLog;
     if (
       activeSubTab === 'confirm_completed' || 
       activeSubTab === 'completed_history' ||
@@ -1811,7 +1848,7 @@ export default function RequestBacklogTab({
       handleFetchLog();
       handleFetchDoneInProgress();
     }
-  }, [activeSubTab]);
+  }, [activeSubTab, handleFetchLog]);
 
   // Reset page when filters or page size change
   useEffect(() => {
@@ -1853,6 +1890,10 @@ export default function RequestBacklogTab({
       setLoading(false);
     }
   }, [sheetTabName]);
+
+  useEffect(() => {
+    fetchRef.current = handleFetch;
+  }, [handleFetch]);
 
   // Push to Firestore
   const handlePush = useCallback(async (updatedRows?: Record<string, string>[]) => {
@@ -3059,7 +3100,7 @@ export default function RequestBacklogTab({
     };
   }, [crmData]);
 
-  const handleFetchDoneInProgress = async () => {
+  const handleFetchDoneInProgress = useCallback(async () => {
     setDoneInProgressLoading(true);
     const activeWeek = currentWeekRange || '';
     try {
@@ -3083,7 +3124,11 @@ export default function RequestBacklogTab({
     } finally {
       setDoneInProgressLoading(false);
     }
-  };
+  }, [currentWeekRange]);
+
+  useEffect(() => {
+    fetchDoneRef.current = handleFetchDoneInProgress;
+  }, [handleFetchDoneInProgress]);
 
   const addRowsToDoneInProgress = async (items: Record<string, string>[]) => {
     if (items.length === 0) return;
@@ -5643,6 +5688,23 @@ export default function RequestBacklogTab({
                     )}
                     {!isAutoSyncing && autoSyncInterval !== 'off' && (
                       <div className="flex items-center gap-1.5 text-[10px] text-indigo-600 font-medium ml-1">
+                        {lastAutoSyncResult && (
+                          lastAutoSyncResult.success ? (
+                            <span 
+                              className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-semibold text-[10px] flex items-center gap-1"
+                              title={`Auto-sincronizado con éxito (${lastAutoSyncResult.count} requerimientos activos)`}
+                            >
+                              Sincronizado ✓ ({lastAutoSyncResult.count} activos)
+                            </span>
+                          ) : (
+                            <span 
+                              className="bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-semibold text-[10px] flex items-center gap-1"
+                              title={lastAutoSyncResult.message || 'Error en auto-sincronización'}
+                            >
+                              Error Sincro ⚠️
+                            </span>
+                          )
+                        )}
                         {lastAutoSyncTime && (
                           <span>
                             Última: {lastAutoSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
