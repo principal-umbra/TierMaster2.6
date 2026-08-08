@@ -105,33 +105,39 @@ const isStatusResolved = (status: string): boolean => {
   if (!status) return false;
   const s = normalizeStatus(status);
   
-  // "pendiente a confirmar" should NOT be considered fully resolved for the metrics 
-  // until it is actually confirmed/completed.
-  if (s.includes('confirmar')) return false;
+  if (s.includes('abierto y pendiente') || s === 'abierto' || s === 'pendiente') {
+    return false;
+  }
 
   return (
-    s.includes('completad') || // completado, completada, completados, completadas
-    s.includes('resuelt') ||   // resuelto, resuelta, resueltos, resueltas, resolved
-    s.includes('cerrad') ||    // cerrado, cerrada, cerrados, cerradas, closed
-    s.includes('exitos') ||    // exitoso, exitosa, exitosos, exitosas, success
-    s.includes('finalizad') || // finalizado, finalizada, finalizados, finalizadas
-    s.includes('terminad') ||  // terminado, terminada, terminados, terminadas
-    s.includes('entregad') ||  // entregado, entregada, entregados, entregadas
-    s.includes('cancelad') ||  // cancelado, cancelada, cancelados, canceladas
-    s.includes('anulad') ||    // anulado, anulada, anulados, anuladas
-    s.includes('rechazad') ||  // rechazado, rechazada, rechazados, rechazadas
+    s.includes('completad') ||
+    s.includes('resuelt') ||
+    s.includes('cerrad') ||
+    s.includes('realizad') ||
+    s.includes('solucion') ||
+    s.includes('exitos') ||
+    s.includes('finalizad') ||
+    s.includes('terminad') ||
+    s.includes('entregad') ||
+    s.includes('cancelad') ||
+    s.includes('anulad') ||
+    s.includes('rechazad') ||
     s.includes('done') ||
     s.includes('closed') ||
     s.includes('resolved') ||
     s.includes('completed') ||
-    s.includes('historico')    // historico, historica
+    s.includes('historico')
   );
 };
 
 const isStatusInProgress = (status: string): boolean => {
   if (!status) return false;
   const s = normalizeStatus(status);
-  return s.includes('progres') ||
+  if (isStatusResolved(s)) return false;
+  if (s.includes('abierto y pendiente') || s === 'abierto' || s === 'pendiente') return false;
+
+  return (
+    s.includes('progres') ||
     s.includes('curso') ||
     s.includes('intern') ||
     s.includes('espera') ||
@@ -139,11 +145,15 @@ const isStatusInProgress = (status: string): boolean => {
     s.includes('proceso') ||
     s.includes('procesando') ||
     s.includes('waiting') ||
-    s.includes('hold') ||
-    s.includes('revis') ||
-    s.includes('verific') ||
-    s.includes('proxim') ||
-    s.includes('visit');
+    s.includes('doing') ||
+    s.includes('active') ||
+    s.includes('mantenimiento') ||
+    s.includes('visita') ||
+    s.includes('agendado') ||
+    s.includes('prueba') ||
+    s.includes('escalado') ||
+    s.includes('proyecto')
+  );
 };
 
 const DEFAULT_HEADERS = [
@@ -2331,6 +2341,19 @@ export default function RequestBacklogTab({
         await saveCRMData(col, rows);
       }
       await saveCRMData('historico_completados', freshHistory);
+
+      // Also ensure visitas_programadas are marked Cerrada for confirmed items
+      for (const item of items) {
+        const targetIdVal = String(item.ID || item.id || '').trim();
+        if (targetIdVal) {
+          registerProgrammedVisit({
+            ID: targetIdVal,
+            id: targetIdVal,
+            estado_visita: 'Cerrada',
+            timestamp_cierre: new Date().toISOString()
+          }).catch(() => {});
+        }
+      }
       
       setLoadStatus('success');
       setLoadMessage('Todos los requerimientos fueron confirmados correctamente.');
@@ -3523,17 +3546,6 @@ export default function RequestBacklogTab({
                 Gestión de Visitas
               </button>
               <button
-                onClick={() => setActiveSubTab('status_cycle')}
-                className={`px-4 py-2.5 text-xs font-bold font-sans border-b-2 cursor-pointer transition-all flex items-center gap-2 whitespace-nowrap ${
-                  activeSubTab === 'status_cycle'
-                    ? 'border-blue-600 text-blue-700 bg-blue-50'
-                    : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <Clock className="w-4 h-4 text-slate-500" />
-                Estado y Ciclo de Vida
-              </button>
-              <button
                 onClick={() => setActiveSubTab('reports')}
                 className={`px-4 py-2.5 text-xs font-bold font-sans border-b-2 cursor-pointer transition-all flex items-center gap-2 whitespace-nowrap ${
                   activeSubTab === 'reports'
@@ -3580,11 +3592,22 @@ export default function RequestBacklogTab({
                 <CheckCircle2 className="w-4 h-4 text-slate-500" />
                 Historial de Completados
               </button>
+              <button
+                onClick={() => setActiveSubTab('status_cycle')}
+                className={`px-4 py-2.5 text-xs font-bold font-sans border-b-2 cursor-pointer transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeSubTab === 'status_cycle'
+                    ? 'border-blue-600 text-blue-700 bg-blue-50'
+                    : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <Clock className="w-4 h-4 text-slate-500" />
+                Ciclo de Vida
+              </button>
             </>
           )}
         </div>
 
-        {mode === 'request_backlog' && (activeSubTab === 'roster_analysis' || activeSubTab === 'status_cycle') && (
+        {(activeSubTab === 'roster_analysis' || activeSubTab === 'status_cycle') && (
           <button
             onClick={() => setShowTotalBacklog(!showTotalBacklog)}
             className={`flex items-center gap-2.5 text-xs px-4 py-1.5 rounded-xl border font-bold font-mono transition-all cursor-pointer ${
@@ -3615,7 +3638,7 @@ export default function RequestBacklogTab({
             activeSubTab === 'roster_analysis' ? 'Análisis por Roster' :
             activeSubTab === 'colaborar' ? 'Escalaciones / Asistencia' :
             activeSubTab === 'visitas' ? 'Gestión de Visitas' :
-            activeSubTab === 'status_cycle' ? 'Estado y Ciclo de Vida' :
+            activeSubTab === 'status_cycle' ? 'Ciclo de Vida' :
             activeSubTab === 'reports' ? 'Tareas' :
             activeSubTab === 'compare_print' ? 'Comparar CRM Print' :
             activeSubTab === 'confirm_completed' ? 'Confirmar Completados' :
@@ -5467,13 +5490,13 @@ export default function RequestBacklogTab({
         );
       })()}
 
-      {/* --- Tab 3: Estado y Ciclo de Vida --- */}
+      {/* --- Tab 3: Ciclo de Vida --- */}
       {activeSubTab === 'colaborar' && (
         <CollaborateTab agents={agents} crmData={mergedAllBacklogRows} currentUser={currentUser} />
       )}
 
       {activeSubTab === 'status_cycle' && (
-        <StatusCycleTab crmData={mergedAllBacklogRows} />
+        <StatusCycleTab crmData={mergedAllBacklogRows} agents={agents} />
       )}
 
       {/* --- Tab 4: Tareas --- */}

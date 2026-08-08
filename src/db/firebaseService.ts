@@ -2786,17 +2786,34 @@ export async function fetchCRMData(collectionName: string = 'requerimientos_en_c
         });
 
         const completedIds = new Set([
-          ...doneWeekly.map(d => String(d.id || d.ID || '').trim().toUpperCase()),
-          ...doneHistorical.map(d => String(d.id || d.ID || '').trim().toUpperCase())
+          ...doneWeekly.map(d => String(d.id || d.ID || d['ID Requerimiento'] || d.requerimiento_id || d.id_registro_visita || '').trim().toUpperCase()),
+          ...doneHistorical.map(d => String(d.id || d.ID || d['ID Requerimiento'] || d.requerimiento_id || d.id_registro_visita || '').trim().toUpperCase())
         ].filter(Boolean));
+
+        // Scan current rows for any that are marked completed/resolved in CRM status
+        rows.forEach(r => {
+          const rId = String(r.id || r.ID || '').trim().toUpperCase();
+          if (rId) {
+            const stat = String(r.Status || r.Estado || r.status || r.estado || '').toLowerCase();
+            const colJ = String(r['Estado Registro'] || r['Estado registro'] || r['Columna J'] || '').toLowerCase();
+            if (
+              stat.includes('cerrad') || stat.includes('completad') || stat.includes('resuelt') ||
+              stat.includes('realizad') || stat.includes('solucion') || stat.includes('finaliz') ||
+              stat.includes('anulad') || stat.includes('rechazad') || colJ.includes('completado')
+            ) {
+              completedIds.add(rId);
+            }
+          }
+        });
         
         const processedIds = new Set();
         rows = rows.map(row => {
           const idVal = String(row.id || row.ID || '').trim().toUpperCase();
           if (!idVal) return row;
 
-          // Prioridad 1: Si ya está en backlog completado/histórico, es Cerrada
+          // Prioridad 1: Si ya está en backlog completado/histórico o marcado como resuelto
           if (completedIds.has(idVal)) {
+            processedIds.add(idVal);
             return {
               ...row,
               estado_visita: 'Cerrada'
@@ -2813,6 +2830,10 @@ export async function fetchCRMData(collectionName: string = 'requerimientos_en_c
             const sKey = Object.keys(row).find(h => h.toLowerCase() === 'subject' || h.toLowerCase() === 'asunto' || h.toLowerCase() === 'requerimiento') || 'Asunto';
             const contactKey = Object.keys(row).find(h => h.toLowerCase() === 'contact' || h.toLowerCase() === 'contacto') || 'Contacto';
 
+            const computedEstado = (vData.estado_visita === 'Cerrada' || completedIds.has(idVal))
+              ? 'Cerrada'
+              : (vData.estado_visita || row.estado_visita || 'Programada');
+
             return {
               ...row,
               [cKey]: vData.cliente || row[cKey] || '',
@@ -2826,7 +2847,7 @@ export async function fetchCRMData(collectionName: string = 'requerimientos_en_c
               duracion_estimada_visita: vData.duracion_estimada_visita || row.duracion_estimada_visita || '2 horas',
               duracion_visita: vData.duracion_visita || vData.duracion_estimada_visita || row.duracion_visita || '',
               comentario_visita: vData.comentario_visita || row.comentario_visita || '',
-              estado_visita: vData.estado_visita || row.estado_visita || 'Programada',
+              estado_visita: computedEstado,
               direccion_visita: vData.direccion_visita || row.direccion_visita || '',
               latitud_visita: vData.latitud_visita || row.latitud_visita || '',
               longitud_visita: vData.longitud_visita || row.longitud_visita || ''
@@ -2835,9 +2856,9 @@ export async function fetchCRMData(collectionName: string = 'requerimientos_en_c
           return row;
         });
 
-        // Retain active visits that were dropped from the main CRM data
+        // Retain active visits that were dropped from the main CRM data ONLY if they are active and not completed
         visitas.forEach(vData => {
-          const vId = String(vData.ID || vData.requerimiento_id || vData.id_registro_visita || '').trim().toUpperCase();
+          const vId = String(vData.id || vData.ID || vData.requerimiento_id || vData.id_registro_visita || '').trim().toUpperCase();
           if (vId && !processedIds.has(vId) && !completedIds.has(vId)) {
             const estado = String(vData.estado_visita || 'Programada');
             if (estado === 'Programada' || estado === 'En Ejecución') {
@@ -3055,8 +3076,8 @@ export async function syncProgrammedVisits(): Promise<void> {
     const doneWeekly = await fetchWeeklyBacklog();
     const doneHistorical = await fetchHistoricalBacklog();
     const completedIds = new Set([
-      ...doneWeekly.map(d => String(d.ID || d.id || '').trim().toUpperCase()),
-      ...doneHistorical.map(d => String(d.ID || d.id || '').trim().toUpperCase())
+      ...doneWeekly.map(d => String(d.ID || d.id || d['ID Requerimiento'] || d.requerimiento_id || d.id_registro_visita || '').trim().toUpperCase()),
+      ...doneHistorical.map(d => String(d.ID || d.id || d['ID Requerimiento'] || d.requerimiento_id || d.id_registro_visita || '').trim().toUpperCase())
     ].filter(Boolean));
 
     // Map existing visits to check for presence

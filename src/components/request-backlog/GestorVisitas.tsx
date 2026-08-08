@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProgrammedVisits, deleteProgrammedVisit, db } from '../../db/firebaseService';
+import { getProgrammedVisits, deleteProgrammedVisit, syncProgrammedVisits, db } from '../../db/firebaseService';
 import { doc, setDoc } from 'firebase/firestore';
 import { 
   Calendar, 
@@ -49,6 +49,7 @@ export default function GestorVisitas({
   const [visitTechnicianFilter, setVisitTechnicianFilter] = useState<string>('');
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
   const [copiedDay, setCopiedDay] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // States for programmed visits
   const [visitasProgramadas, setVisitasProgramadas] = useState<any[]>([]);
@@ -58,48 +59,125 @@ export default function GestorVisitas({
     setVisitasProgramadas(visits);
   };
 
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncProgrammedVisits();
+      await fetchVisits();
+    } catch (err) {
+      console.error('Error syncing visits:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    // Sync visits on mount to clean up any closed/historical items
+    syncProgrammedVisits().then(() => fetchVisits()).catch(() => fetchVisits());
+  }, []);
+
   useEffect(() => {
     fetchVisits();
   }, [crmData, visitViewTab]);
 
+  // Helper to determine if a ticket/visit is closed or resolved
+  const isTicketResolved = (row: any): boolean => {
+    if (!row) return false;
+    if (row.estado_visita === 'Cerrada') return true;
+    if (row._sourceSheet === 'historico_completados' || row._sourceSheet === 'admin_backlog_done') return true;
+
+    const statStr = String(row[statusKey] || row.Status || row.Estado || row.status || row.estado || '')
+      .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const colJVal = String(row['Estado Registro'] || row['Estado registro'] || row['Columna J'] || '')
+      .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+    return (
+      statStr.includes('cerrad') ||
+      statStr.includes('close') ||
+      statStr.includes('resuelt') ||
+      statStr.includes('completad') ||
+      statStr.includes('realizad') ||
+      statStr.includes('solucion') ||
+      statStr.includes('finaliz') ||
+      statStr.includes('anulad') ||
+      statStr.includes('rechazad') ||
+      statStr.includes('done') ||
+      statStr.includes('historico') ||
+      statStr.includes('confirmar') ||
+      colJVal.includes('completado') ||
+      colJVal.includes('confirmar')
+    );
+  };
+
+  // Build a set of closed ticket IDs
+  const closedTicketIds = new Set<string>();
+  visitasProgramadas.forEach(v => {
+    const vId = String(v.id || v.ID || v.id_registro_visita || v.requerimiento_id || '').trim().toUpperCase();
+    if (vId && (v.estado_visita === 'Cerrada' || isTicketResolved(v))) {
+      closedTicketIds.add(vId);
+    }
+  });
+  crmData.rows.forEach(r => {
+    const rId = String(r.ID || r.id || '').trim().toUpperCase();
+    if (rId && isTicketResolved(r)) {
+      closedTicketIds.add(rId);
+    }
+  });
+
   // Active tickets set
   const activeTicketIds = new Set(crmData.rows.map(r => String(r.ID || r.id || '').trim().toUpperCase()).filter(Boolean));
 
-  // 1. Filter active visits
-  // A visit is active if:
-  // - It's in crmData.rows AND has status "02 Próxima Visita" (even if not programmed yet)
-  // - OR it's in crmData.rows AND has estado_visita 'Programada' or 'En Ejecución'
-  const allActiveVisits = crmData.rows.filter(row => {
-    if (row.estado_visita === 'Cerrada') return false;
+  // 1. Filter active visits with deduplication
+  const activeVisitsMap = new Map<string, any>();
+  crmData.rows.forEach(row => {
+    const rId = String(row.ID || row.id || '').trim().toUpperCase();
+    if (!rId) return;
+    if (row.estado_visita === 'Cerrada') return;
+    if (isTicketResolved(row)) return;
+    if (closedTicketIds.has(rId)) return;
+
     const statusVal = String(row[statusKey] || '').toLowerCase();
     const isProxima = statusVal.includes('02 próxima visita') || statusVal.includes('02 proxima visita') || statusVal.includes('proxima visita');
     const estadoVisita = row.estado_visita || '';
     const isProgrammedOrExec = estadoVisita === 'Programada' || estadoVisita === 'En Ejecución';
-    return isProxima || isProgrammedOrExec;
-  });
 
-  // 2. Filter history visits
-  // A visit is history if it's in visitas_programadas and its estado_visita is 'Cerrada'
-  const allHistoryVisits = visitasProgramadas.filter(v => {
-    const vId = String(v.ID || v.id || v.id_registro_visita || v.requerimiento_id || '').trim().toUpperCase();
-    if (!vId) return false;
-    return v.estado_visita === 'Cerrada';
-  }).map(v => {
-    // Return a row-like object
-    const vId = String(v.ID || v.id || v.id_registro_visita || v.requerimiento_id || '').trim().toUpperCase();
-    const r: any = { ...v, ID: vId, id: vId };
-    r[assignedKey] = v.tecnico_visita || v.tecnico || v[assignedKey] || '';
-    r[clientKey] = v.cliente || v[clientKey] || '';
-    r[subjectKey] = v.asunto || v[subjectKey] || '';
-    
-    if (!activeTicketIds.has(vId) && v.estado_visita !== 'Cerrada') {
-       r.estado_visita = 'Cerrada'; // Auto-close for display if gone from CRM
-       r._autoClosed = true;
+    if (isProxima || isProgrammedOrExec) {
+      if (!activeVisitsMap.has(rId) || (activeVisitsMap.get(rId)._retenida && !row._retenida)) {
+        activeVisitsMap.set(rId, row);
+      }
     }
-    return r;
   });
 
-  const historyWithForced = [...allHistoryVisits];
+  const allActiveVisits = Array.from(activeVisitsMap.values());
+
+  // 2. Filter history visits with deduplication
+  const historyMap = new Map<string, any>();
+
+  visitasProgramadas.forEach(v => {
+    const vId = String(v.id || v.ID || v.id_registro_visita || v.requerimiento_id || '').trim().toUpperCase();
+    if (!vId) return;
+    const isClosed = v.estado_visita === 'Cerrada' || closedTicketIds.has(vId) || isTicketResolved(v) || !activeTicketIds.has(vId);
+    if (isClosed) {
+      const r: any = { ...v, ID: vId, id: vId, estado_visita: 'Cerrada' };
+      r[assignedKey] = v.tecnico_visita || v.tecnico || v[assignedKey] || '';
+      r[clientKey] = v.cliente || v[clientKey] || '';
+      r[subjectKey] = v.asunto || v[subjectKey] || '';
+      historyMap.set(vId, r);
+    }
+  });
+
+  crmData.rows.forEach(row => {
+    const rId = String(row.ID || row.id || '').trim().toUpperCase();
+    if (!rId) return;
+    if (row.estado_visita === 'Cerrada' || isTicketResolved(row)) {
+      if (!historyMap.has(rId)) {
+        const r = { ...row, ID: rId, id: rId, estado_visita: 'Cerrada' };
+        historyMap.set(rId, r);
+      }
+    }
+  });
+
+  const historyWithForced = Array.from(historyMap.values());
 
   // Extract list of technicians with visits for dropdown
   const uniqueTechnicians = Array.from(new Set([
@@ -254,6 +332,16 @@ export default function GestorVisitas({
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
+            title="Sincronizar el estado de las visitas con el histórico de requerimientos completados"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar Cierres'}</span>
+          </button>
         </div>
       </div>
 
@@ -573,6 +661,17 @@ export default function GestorVisitas({
                                   className="px-2 py-1.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-850 border border-slate-200 text-[10px] font-bold rounded-lg cursor-pointer shadow-sm transition-all"
                                 >
                                   Reprogramar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setClosingVisitRow(row);
+                                  }}
+                                  className="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-lg cursor-pointer shadow-sm transition-all flex items-center gap-1"
+                                  title="Cerrar esta visita directamente"
+                                >
+                                  <CheckSquare className="w-3 h-3" />
+                                  Cerrar
                                 </button>
                               </>
                             )}

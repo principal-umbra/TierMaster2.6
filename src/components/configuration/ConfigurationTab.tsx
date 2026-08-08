@@ -366,7 +366,6 @@ const SYSTEM_SECTIONS = [
       { key: 'roster_analysis', label: 'Análisis por Roster' },
       { key: 'colaborar', label: 'Escalaciones / Asistencia' },
       { key: 'visitas', label: 'Gestión de Visitas' },
-      { key: 'status_cycle', label: 'Estado y Ciclo de Vida' },
       { key: 'reports', label: 'Tareas' }
     ] 
   },
@@ -375,7 +374,9 @@ const SYSTEM_SECTIONS = [
     label: 'Admin Backlog', 
     subsections: [
       { key: 'compare_print', label: 'Comparar CRM Print' },
-      { key: 'confirm_completed', label: 'Confirmar Completados' }
+      { key: 'confirm_completed', label: 'Confirmar Completados' },
+      { key: 'completed_history', label: 'Historial de Completados' },
+      { key: 'status_cycle', label: 'Ciclo de Vida' }
     ] 
   },
   { key: 'contractors', label: 'Contratistas', subsections: [] },

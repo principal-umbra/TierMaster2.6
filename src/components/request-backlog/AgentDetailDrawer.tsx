@@ -89,22 +89,19 @@ export default function AgentDetailDrawer({
   });
 
   const getIsCompleted = (t: any) => {
-    const stat = normalizeStatus(String(t[statusKey] || t["Status"] || t["Estado"] || ''));
+    const statStr = String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || '');
     let colJVal = '';
     if (getColJValue) {
-      colJVal = normalizeStatus(getColJValue(t));
+      colJVal = getColJValue(t) || '';
     } else {
-      colJVal = normalizeStatus(String(t["Estado Registro"] || t["Estado registro"] || ''));
+      colJVal = String(t["Estado Registro"] || t["Estado registro"] || t["columna j"] || t["Columna J"] || '');
     }
     
-    return isStatusResolved(String(t[statusKey] || t["Status"] || t["Estado"] || '')) || 
-                        colJVal.includes('confirmar') || 
-                        colJVal === 'completado' ||
-                        isStatusResolved(colJVal) ||
-                        stat.includes('confirmar') || 
-                        stat === 'completado' ||
-                        t._sourceSheet === 'historico_completados' ||
-                        t._sourceSheet === 'backlog_semanal';
+    if (isStatusResolved(statStr) || isStatusResolved(colJVal)) return true;
+    if (normalizeStatus(colJVal).includes('confirmar') || normalizeStatus(colJVal) === 'completado') return true;
+    if (t._sourceSheet === 'historico_completados' || t._sourceSheet === 'admin_backlog_done') return true;
+
+    return false;
   };
 
   const assignedTickets = rawAssignedTickets.filter(ticket => {
@@ -112,7 +109,8 @@ export default function AgentDetailDrawer({
     
     const isCompleted = getIsCompleted(ticket);
     
-    const isWorking = !isCompleted && isStatusInProgress(String(ticket[statusKey] || ticket["Status"] || ticket["Estado"] || ''));
+    const statVal = String(ticket[statusKey] || ticket["Status"] || ticket["Estado"] || ticket["status"] || ticket["estado"] || '');
+    const isWorking = !isCompleted && isStatusInProgress(statVal);
 
     const isPending = !isCompleted && !isWorking;
 
@@ -125,7 +123,7 @@ export default function AgentDetailDrawer({
     if (rosterTicketStatusFilter === 'completed') {
       return isCompleted;
     }
-    return String(ticket[statusKey]).trim() === rosterTicketStatusFilter;
+    return String(ticket[statusKey] || ticket["Status"] || ticket["Estado"] || '').trim() === rosterTicketStatusFilter;
   });
 
   const totalAll = agentMetric.assigned + agentMetric.completed;
@@ -493,19 +491,9 @@ export default function AgentDetailDrawer({
                   }`}
                 >
                   Trabajando ({rawAssignedTickets.filter(t => {
-                    const s = normalizeStatus(String(t[statusKey] || ''));
                     const isCompleted = getIsCompleted(t);
-                    return !isCompleted && (
-                      s.includes('progreso') || 
-                      s.includes('desarrollo') || 
-                      s.includes('doing') || 
-                      s.includes('ejecucion') || 
-                      s.includes('analiz') || 
-                      s.includes('interno') ||
-                      s.includes('trabajando') ||
-                      s.includes('active') ||
-                      s.includes('proceso')
-                    );
+                    const statVal = String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || '');
+                    return !isCompleted && isStatusInProgress(statVal);
                   }).length})
                 </button>
                 <button
@@ -517,19 +505,9 @@ export default function AgentDetailDrawer({
                   }`}
                 >
                   Pendientes ({rawAssignedTickets.filter(t => {
-                    const s = normalizeStatus(String(t[statusKey] || ''));
                     const isCompleted = getIsCompleted(t);
-                    const isWorking = !isCompleted && (
-                      s.includes('progreso') || 
-                      s.includes('desarrollo') || 
-                      s.includes('doing') || 
-                      s.includes('ejecucion') || 
-                      s.includes('analiz') || 
-                      s.includes('interno') ||
-                      s.includes('trabajando') ||
-                      s.includes('active') ||
-                      s.includes('proceso')
-                    );
+                    const statVal = String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || '');
+                    const isWorking = !isCompleted && isStatusInProgress(statVal);
                     return !isCompleted && !isWorking;
                   }).length})
                 </button>
@@ -552,9 +530,9 @@ export default function AgentDetailDrawer({
             {paginatedRosterTickets.length > 0 ? (
               <div className="space-y-3">
                 {paginatedRosterTickets.map((ticket, idx) => {
-                  const statVal = String(ticket[statusKey] || '');
+                  const statVal = String(ticket[statusKey] || ticket["Status"] || ticket["Estado"] || '');
                   const pVal = String(ticket[priorityKey] || 'Normal');
-                  const isCompleted = isStatusResolved(statVal);
+                  const isCompleted = getIsCompleted(ticket);
 
                   // Priority colors map
                   const priorityStyles: Record<string, string> = {

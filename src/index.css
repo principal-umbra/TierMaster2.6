@@ -207,19 +207,19 @@ main.custom-scrollbar {
    CARDS AND MAIN COMPONENT PANELS - Crisp design contrast
    ==========================================================================
 */
-[class*="bg-[#111827]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#090d16]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#0d1222]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#0f172a]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-slate-950"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-slate-900"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#0a0e1a]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#111827]/60"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#111827]/70"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-[class*="bg-[#0c101d]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg),
-.glass-panel:not(.fixed):not(.keep-dark-bg),
-#card-action-bar:not(.keep-dark-bg),
-#leaderboard-podium-section div[class*="border-slate-850"]:not(.keep-dark-bg) {
+[class*="bg-[#111827]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#090d16]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#0d1222]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#0f172a]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-950"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-900"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#0a0e1a]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#111827]/60"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#111827]/70"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-[#0c101d]"]:not(.fixed):not(button):not(button *):not(input):not(select):not(span):not(span *):not(label):not(label *):not(.keep-dark-bg):not(.keep-dark-bg *),
+.glass-panel:not(.fixed):not(.keep-dark-bg):not(.keep-dark-bg *),
+#card-action-bar:not(.keep-dark-bg):not(.keep-dark-bg *),
+#leaderboard-podium-section div[class*="border-slate-850"]:not(.keep-dark-bg):not(.keep-dark-bg *) {
   background-color: #ffffff !important; /* Soft paper white card base */
   background-image: none !important;
   backdrop-filter: none !important;
@@ -241,12 +241,12 @@ main.custom-scrollbar {
 }
 
 /* Horizontal tab rows, table rows, and dividers */
-[class*="bg-slate-950/80"]:not(.keep-dark-bg),
-[class*="bg-slate-950/40"]:not(.keep-dark-bg),
-[class*="bg-slate-900/40"]:not(.keep-dark-bg),
-[class*="bg-slate-900/10"]:not(.keep-dark-bg),
-[class*="bg-slate-900/50"]:not(.keep-dark-bg),
-[class*="bg-slate-900/60"]:not(.keep-dark-bg),
+[class*="bg-slate-950/80"]:not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-950/40"]:not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-900/40"]:not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-900/10"]:not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-900/50"]:not(.keep-dark-bg):not(.keep-dark-bg *),
+[class*="bg-slate-900/60"]:not(.keep-dark-bg):not(.keep-dark-bg *),
 table tbody tr:hover,
 #workspace-tools-subnav {
   background-color: #f1f5f9 !important; /* Tinted layout floor rows */
@@ -268,49 +268,49 @@ hr {
 
 /* 
    ==========================================================================
-   CLEAN COGNITIVE TYPOGRAPHY
+   CLEAN COGNITIVE TYPOGRAPHY & CONTRAST SAFETY
    ==========================================================================
 */
-main [class*="text-slate-100"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-200"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-250"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-350"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-300"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-50"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-white"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main .text-white:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main h1:not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main h2:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main h3:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main h4:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main h5:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main strong:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main p strong:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *) {
-  color: #0f172a !important; /* Highly solid black-navy for maximum contrast and legibility */
+main [class*="text-slate-100"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-200"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-250"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-350"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-300"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-50"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-white"]:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main .text-white:not(button):not(button *):not([class*="bg-indigo"]):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-cyan"]):not([style*="background"]):not([style*="background-color"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main h1:not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main h2:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main h3:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main h4:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main h5:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main strong:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main p strong:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *) {
+  color: #0f172a !important; /* Highly solid black-navy for maximum contrast and legibility on light backgrounds */
   text-shadow: none !important;
 }
 
-main p:not(button *):not([class*="bg-"]):not([style*="background"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *), 
-main span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main div:not([class*="bg-"]):not([style*="background"]):not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *) {
-  color: #273444 !important; /* Sharp gray text for readability */
+main p:not(button *):not([class*="bg-"]):not([style*="background"]):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *), 
+main span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main div:not([class*="bg-"]):not([style*="background"]):not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *) {
+  color: #273444 !important; /* Sharp gray text for readability on light backgrounds */
 }
 
-main [class*="text-slate-400"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-450"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-500"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-650"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-550"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
-main [class*="text-slate-600"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *),
+main [class*="text-slate-400"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-450"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-500"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-650"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-550"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
+main [class*="text-slate-600"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *),
 label:not(button *):not(.keep-dark-bg):not(.keep-dark-bg *),
-span[class*="text-slate-"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not(.keep-dark-bg):not(.keep-dark-bg *) {
+span[class*="text-slate-"]:not(button *):not(.bg-active *):not(.text-white-keep):not(.text-white-keep *):not(.keep-dark-bg):not(.keep-dark-bg *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *):not([class*="bg-slate-9"] *):not([class*="bg-indigo-9"] *) {
   color: #475569 !important; /* Deep gray descriptor text */
 }
 
-/* Remove stray text backgrounds & text gradient clips */
-main .text-transparent:not(button *):not(.bg-active *),
-main [class*="text-transparent"]:not(button *):not(.bg-active *),
-main [class*="bg-clip-text"]:not(button *):not(.bg-active *) {
+/* Remove stray text backgrounds & text gradient clips EXCEPT on dark backgrounds or explicit keeps */
+main .text-transparent:not(button *):not(.bg-active *):not(.keep-dark-bg *):not(.text-white-keep *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *),
+main [class*="text-transparent"]:not(button *):not(.bg-active *):not(.keep-dark-bg *):not(.text-white-keep *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *),
+main [class*="bg-clip-text"]:not(button *):not(.bg-active *):not(.keep-dark-bg *):not(.text-white-keep *):not([class*="from-slate-"] *):not([class*="from-indigo-"] *) {
   color: #0f172a !important;
   background-clip: unset !important;
   -webkit-background-clip: unset !important;
@@ -717,25 +717,16 @@ main .keep-dark-bg * {
   text-shadow: none !important;
 }
 
-.keep-dark-bg span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
-.keep-dark-bg div:not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
-.keep-dark-bg h1:not([class*="bg-"]),
-.keep-dark-bg h2:not([class*="bg-"]),
-.keep-dark-bg h3:not([class*="bg-"]),
-.keep-dark-bg h4:not([class*="bg-"]),
-.keep-dark-bg p:not([class*="bg-"]),
-.keep-dark-bg th:not([class*="bg-"]),
-.keep-dark-bg td:not([class*="bg-"]),
-main .keep-dark-bg span:not(.material-symbols-outlined):not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
-main .keep-dark-bg div:not([class*="bg-"]):not([style*="background"]):not(.bg-white *),
-main .keep-dark-bg h1:not([class*="bg-"]),
-main .keep-dark-bg h2:not([class*="bg-"]),
-main .keep-dark-bg h3:not([class*="bg-"]),
-main .keep-dark-bg h4:not([class*="bg-"]),
-main .keep-dark-bg p:not([class*="bg-"]),
-main .keep-dark-bg th:not([class*="bg-"]),
-main .keep-dark-bg td:not([class*="bg-"]) {
-  color: #f8fafc !important; /* Pristine readable light text */
+.keep-dark-bg h1:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg h2:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg h3:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg h4:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg p:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg th:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg td:not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg span:not(.material-symbols-outlined):not([class*="bg-white"]):not(.bg-white *),
+.keep-dark-bg div:not([class*="bg-white"]):not(.bg-white *) {
+  color: #f8fafc !important; /* Pristine readable light text on dark container */
 }
 
 /* Explicit white text rule for text-white-keep */
@@ -746,15 +737,15 @@ main .text-white-keep * {
   color: #ffffff !important;
 }
 
-/* Ensure title and subheadings are readable and don't get overriden by dark text styles */
+/* Ensure title and subheadings in keep-dark-bg are readable */
 main .keep-dark-bg span.text-slate-400,
 main .keep-dark-bg [class*="text-slate-400"] {
-  color: #cbd5e1 !important; /* Beautiful slate gray */
+  color: #cbd5e1 !important; /* Slate gray on dark background */
 }
 
 main .keep-dark-bg span.text-slate-300,
 main .keep-dark-bg [class*="text-slate-300"] {
-  color: #f1f5f9 !important; /* Beautiful off-white */
+  color: #f1f5f9 !important; /* Off-white on dark background */
 }
 
 /* Ensure the buttons inside keep-dark-bg have correct text shadow and basic layout styles */
