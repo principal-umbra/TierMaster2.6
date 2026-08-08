@@ -1305,6 +1305,39 @@ export default function RequestBacklogTab({
   const [showTotalBacklog, setShowTotalBacklog] = useState<boolean>(false);
   const [rosterPage, setRosterPage] = useState(1);
 
+  // Unassigned tickets calculation
+  const unassignedCount = useMemo(() => {
+    const agentKey = crmData.headers.find(h => 
+      h.toLowerCase() === 'técnico asignado' || 
+      h.toLowerCase() === 'tecnico asignado' || 
+      h.toLowerCase() === 'asignado' || 
+      h.toLowerCase() === 'agent' || 
+      h.toLowerCase() === 'assigned to'
+    ) || 'Assigned To';
+
+    return crmData.rows.filter(row => {
+      const rawAgentName = String(
+        row[agentKey] || 
+        row["Assigned To"] || 
+        row["Técnico asignado"] || 
+        row["Tecnico asignado"] || 
+        row["Asignado"] || 
+        row["Agent"] || 
+        ''
+      ).trim();
+
+      const rawAgentNameLower = rawAgentName.toLowerCase();
+      return !rawAgentName || 
+             rawAgentNameLower === 'unassigned' || 
+             rawAgentNameLower === 'sin asignar' || 
+             rawAgentNameLower === '-' || 
+             rawAgentNameLower === 'n/a' || 
+             rawAgentNameLower === 'n/d' || 
+             rawAgentNameLower === 'ninguno' || 
+             rawAgentNameLower === 'sistema';
+    }).length;
+  }, [crmData]);
+
   // Reset roster page when selecting another agent or changing the status filter
   useEffect(() => {
     setRosterPage(1);
@@ -4396,11 +4429,53 @@ export default function RequestBacklogTab({
                   <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600 border border-indigo-100/50">
                     <Activity className="w-7 h-7" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-display font-black text-lg text-slate-800">Carga del Roster</h3>
                     <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed max-w-sm">
                       Monitoreo inteligente de la distribución de requerimientos y capacidad activa del equipo de técnicos.
                     </p>
+
+                    {/* Indicator: Sin Asignar Alert */}
+                    <div className="mt-3.5">
+                      {unassignedCount > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAgentId('sin_asignar')}
+                          className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 hover:bg-amber-500/20 transition-all text-left group shadow-xs cursor-pointer"
+                          title="Haga clic para examinar los requerimientos sin técnico asignado"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 rounded-xl bg-amber-500 text-white shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                              <AlertTriangle className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-black text-amber-950 font-mono tracking-tight">
+                                  {unassignedCount} {unassignedCount === 1 ? 'Caso' : 'Casos'} Sin Asignar
+                                </span>
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded-full font-mono">
+                                  ALERTA
+                                </span>
+                              </div>
+                              <p className="text-[10.5px] text-amber-800 font-medium leading-tight mt-0.5">
+                                Requiere asignación prioritaria de técnico.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-0.5 text-[11px] font-bold text-amber-900 group-hover:translate-x-0.5 transition-transform shrink-0 pr-1">
+                            Ver casos <ChevronRight className="w-3.5 h-3.5" />
+                          </div>
+                        </button>
+                      ) : (
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-left">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <div>
+                            <div className="text-xs font-black font-mono text-emerald-950">0 Casos Sin Asignar</div>
+                            <div className="text-[10px] text-emerald-700 font-medium leading-none">Todos los requerimientos están asignados.</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -4602,6 +4677,26 @@ export default function RequestBacklogTab({
                           {showTotalBacklog ? totalRosterWorking : totalRosterPending}
                         </span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (unassignedCount > 0) {
+                            setSelectedAgentId('sin_asignar');
+                          }
+                        }}
+                        className={`flex flex-1 xl:flex-none items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all ${
+                          unassignedCount > 0
+                            ? 'bg-amber-100/90 border-amber-300 text-amber-950 hover:bg-amber-200 cursor-pointer shadow-xs'
+                            : 'bg-slate-50 border-slate-200 text-slate-600'
+                        }`}
+                        title={unassignedCount > 0 ? "Ver requerimientos sin técnico asignado" : "No hay casos sin asignar"}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${unassignedCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                        <span className="text-[10px] font-bold uppercase font-mono tracking-tight">Sin Asignar</span>
+                        <span className={`text-[11px] font-black font-mono ml-auto xl:ml-1 ${unassignedCount > 0 ? 'text-amber-900 font-black' : 'text-slate-800'}`}>
+                          {unassignedCount}
+                        </span>
+                      </button>
                       <div className="h-5 w-px bg-slate-200 mx-1 hidden sm:block"></div>
                       <div className="flex flex-1 xl:flex-none items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
                         <User className="w-3.5 h-3.5 text-slate-500" />

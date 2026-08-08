@@ -48,17 +48,19 @@ export default function AgentDetailDrawer({
     setRosterPage(1);
   }, [rosterTicketStatusFilter]);
 
-  const selectedAgent = agents.find(a => a.id === selectedAgentId);
+  const selectedAgent = agents.find(a => a.id === selectedAgentId) || (selectedAgentId === 'sin_asignar' ? {
+    id: 'sin_asignar',
+    name: 'Sin Asignar',
+    role: 'Requerimientos Sin Técnico Asignado',
+    team: 'Atención Prioritaria',
+    photo: '',
+    initials: 'SA',
+    avatarBg: '#D97706',
+    tierId: 'L1'
+  } : null);
+  
   if (!selectedAgent) return null;
-
-  // Get metrics for this agent specifically
-  const agentMetric = rosterMetrics.find(m => isAgentNameMatch(m.name, selectedAgent.name)) || {
-    name: selectedAgent.name,
-    assigned: 0,
-    working: 0,
-    completed: 0,
-    pending: 0
-  };
+  const isUnassignedAgent = selectedAgent.id === 'sin_asignar' || selectedAgent.name.toLowerCase().includes('sin asignar');
 
   // Match their tickets in CRM
   const agentKey = crmData.headers.find(h => 
@@ -84,7 +86,20 @@ export default function AgentDetailDrawer({
       row["Asignado"] || 
       row["Agent"] || 
       ''
-    );
+    ).trim();
+
+    if (isUnassignedAgent) {
+      const assignedValLower = assignedVal.toLowerCase();
+      return !assignedVal || 
+             assignedValLower === 'unassigned' || 
+             assignedValLower === 'sin asignar' || 
+             assignedValLower === '-' || 
+             assignedValLower === 'n/a' || 
+             assignedValLower === 'n/d' || 
+             assignedValLower === 'ninguno' || 
+             assignedValLower === 'sistema';
+    }
+
     return isAgentNameMatch(assignedVal, selectedAgent.name);
   });
 
@@ -104,6 +119,23 @@ export default function AgentDetailDrawer({
 
     return false;
   };
+
+  // Get metrics for this agent specifically
+  const baseAgentMetric = rosterMetrics.find(m => isAgentNameMatch(m.name, selectedAgent.name)) || {
+    name: selectedAgent.name,
+    assigned: 0,
+    working: 0,
+    completed: 0,
+    pending: 0
+  };
+
+  const agentMetric = isUnassignedAgent ? {
+    name: 'Sin Asignar',
+    assigned: rawAssignedTickets.length,
+    working: rawAssignedTickets.filter(t => !getIsCompleted(t) && isStatusInProgress(String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || ''))).length,
+    completed: rawAssignedTickets.filter(t => getIsCompleted(t)).length,
+    pending: rawAssignedTickets.filter(t => !getIsCompleted(t) && !isStatusInProgress(String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || ''))).length,
+  } : baseAgentMetric;
 
   const assignedTickets = rawAssignedTickets.filter(ticket => {
     if (rosterTicketStatusFilter === 'all') return true;
@@ -151,7 +183,12 @@ export default function AgentDetailDrawer({
 
   let loadText = "Sin carga";
   let loadColor = "text-slate-500 bg-slate-50 border-slate-200/40";
-  if (agentMetric.assigned > 0) {
+  if (isUnassignedAgent) {
+    loadText = rawAssignedTickets.length > 0 ? "Atención Requerida" : "Sin Casos Pendientes";
+    loadColor = rawAssignedTickets.length > 0 
+      ? "text-amber-800 bg-amber-100 border-amber-300" 
+      : "text-emerald-700 bg-emerald-50 border-emerald-200";
+  } else if (agentMetric.assigned > 0) {
     const activeLoad = agentMetric.working + agentMetric.pending;
     if (activeLoad > 5) {
       loadText = "Sobrecargado";
