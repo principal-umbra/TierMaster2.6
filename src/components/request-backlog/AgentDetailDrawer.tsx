@@ -89,17 +89,18 @@ export default function AgentDetailDrawer({
   });
 
   const getIsCompleted = (t: any) => {
-    const statStr = String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || '');
-    let colJVal = '';
-    if (getColJValue) {
-      colJVal = getColJValue(t) || '';
-    } else {
-      colJVal = String(t["Estado Registro"] || t["Estado registro"] || t["columna j"] || t["Columna J"] || '');
+    if (t._sourceSheet === 'historico_completados' || t._sourceSheet === 'admin_backlog_done' || t._sourceSheet === 'backlog_semanal') {
+      return true;
     }
-    
-    if (isStatusResolved(statStr) || isStatusResolved(colJVal)) return true;
-    if (normalizeStatus(colJVal).includes('confirmar') || normalizeStatus(colJVal) === 'completado') return true;
-    if (t._sourceSheet === 'historico_completados' || t._sourceSheet === 'admin_backlog_done') return true;
+
+    const statStr = String(t[statusKey] || t["Status"] || t["Estado"] || t["status"] || t["estado"] || '');
+    if (isStatusResolved(statStr)) return true;
+
+    const directColJ = String(t["Estado Registro"] || t["Estado registro"] || t["columna j"] || t["Columna J"] || t["Columna_J"] || '').trim();
+    if (directColJ) {
+      if (isStatusResolved(directColJ)) return true;
+      if (normalizeStatus(directColJ) === 'completado') return true;
+    }
 
     return false;
   };
